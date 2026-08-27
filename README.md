@@ -107,6 +107,8 @@ mvn clean package
 
 Le workflow detaille est documente dans [WORKFLOW_METIER.md](gat-assurances-backend/WORKFLOW_METIER.md).
 
+La charte graphique et les regles d'interface sont disponibles dans [CHARTE_GRAPHIQUE.md](CHARTE_GRAPHIQUE.md).
+
 ## Structure du depot
 
 ```text
