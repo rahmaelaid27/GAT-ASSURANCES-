@@ -32,6 +32,6 @@ public interface DemandeRemorquageRepository extends JpaRepository<DemandeRemorq
 
     /** Missions actives d'un remorqueur (non terminées, non annulées). */
     @Query("SELECT d FROM DemandeRemorquage d WHERE d.remorqueur.id = :remorqueurId " +
-           "AND d.statut NOT IN ('LIVRE','ANNULE') ORDER BY d.createdAt DESC")
+           "AND d.statut NOT IN ('EN_ATTENTE','LIVRE','ANNULE') ORDER BY d.createdAt DESC")
     List<DemandeRemorquage> findActiveMissionsByRemorqueur(Long remorqueurId);
 }
