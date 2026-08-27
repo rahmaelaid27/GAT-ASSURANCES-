@@ -16,33 +16,40 @@ const NAV_ITEMS: Record<Role, NavItem[]> = {
     { label: 'Mes véhicules',    icon: 'car',       route: '/client/vehicules' },
     { label: 'Forum',            icon: 'chat',      route: '/client/forum' },
     { label: 'Profil',           icon: 'user',      route: '/client/profil' },
+    { label: 'Charte graphique', icon: 'palette',   route: '/charte-graphique' },
   ],
   GESTIONNAIRE: [
     { label: 'Dashboard',        icon: 'home',      route: '/gestionnaire/dashboard' },
     { label: 'Mes dossiers',     icon: 'folder',    route: '/gestionnaire/dossiers' },
+    { label: 'Charte graphique', icon: 'palette',   route: '/charte-graphique' },
   ],
   GARAGE: [
     { label: 'Dashboard',        icon: 'home',      route: '/garage/dashboard' },
     { label: 'Mes missions',     icon: 'wrench',    route: '/garage/missions' },
     { label: 'Forum',            icon: 'chat',      route: '/garage/forum' },
+    { label: 'Charte graphique', icon: 'palette',   route: '/charte-graphique' },
   ],
   EXPERT: [
     { label: 'Dashboard',        icon: 'home',      route: '/expert/dashboard' },
     { label: 'Mes expertises',   icon: 'search',    route: '/expert/expertises' },
+    { label: 'Charte graphique', icon: 'palette',   route: '/charte-graphique' },
   ],
   REMORQUEUR: [
     { label: 'Dashboard',        icon: 'home',      route: '/remorqueur/dashboard' },
     { label: 'Interventions',    icon: 'truck',     route: '/remorqueur/interventions' },
+    { label: 'Charte graphique', icon: 'palette',   route: '/charte-graphique' },
   ],
   MANAGER: [
     { label: 'Dashboard',        icon: 'home',      route: '/manager/dashboard' },
     { label: 'Statistiques',     icon: 'chart',     route: '/manager/statistiques' },
+    { label: 'Charte graphique', icon: 'palette',   route: '/charte-graphique' },
   ],
   ADMIN: [
     { label: 'Dashboard',        icon: 'home',      route: '/admin/dashboard' },
     { label: 'Utilisateurs',     icon: 'users',     route: '/admin/utilisateurs' },
     { label: 'Partenaires',      icon: 'handshake', route: '/admin/partenaires' },
     { label: 'Audit',            icon: 'scroll',    route: '/admin/audit' },
+    { label: 'Charte graphique', icon: 'palette',   route: '/charte-graphique' },
   ],
 };
 
@@ -60,6 +67,7 @@ const ICONS: Record<string, string> = {
   users:     `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>`,
   handshake: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>`,
   scroll:    `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>`,
+  palette:   `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3a9 9 0 100 18h1.5a1.5 1.5 0 000-3H12a2 2 0 010-4h3a6 6 0 006-6 9 9 0 00-9-5z"/><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 10.5h.01M9 6.5h.01M14 6h.01M17.5 9h.01"/></svg>`,
 };
 
 const ROLE_CONFIG: Record<Role, { label: string; color: string; bg: string }> = {

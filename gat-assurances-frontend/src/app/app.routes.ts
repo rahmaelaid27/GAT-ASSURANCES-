@@ -8,6 +8,20 @@ export const routes: Routes = [
   // ─── Redirection racine ────────────────────────────────────────────────────
   { path: '', redirectTo: 'auth/login', pathMatch: 'full' },
 
+  {
+    path: 'charte-graphique',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./layouts/main-layout/main-layout.component')
+        .then(m => m.MainLayoutComponent),
+    children: [
+      { path: '',
+        loadComponent: () =>
+          import('./features/charte/charte-graphique.component')
+            .then(m => m.CharteGraphiqueComponent) }
+    ]
+  },
+
   // ─── Authentification (layout minimal) ────────────────────────────────────
   {
     path: 'auth',
