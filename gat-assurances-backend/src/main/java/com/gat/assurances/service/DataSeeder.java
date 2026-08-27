@@ -47,7 +47,8 @@ public class DataSeeder implements CommandLineRunner {
     @Override
     public void run(String... args) {
         if (userRepository.count() > 0) {
-            log.info("Base de données déjà initialisée — DataSeeder ignoré.");
+                        seedAdditionalPartners();
+                        log.info("Base de données déjà initialisée — partenaires supplémentaires vérifiés.");
             return;
         }
 
@@ -74,6 +75,51 @@ public class DataSeeder implements CommandLineRunner {
         log.info("     EXPERT      → expert@gat.com.tn      / expert123");
         log.info("     REMORQUEUR  → remorqueur@gat.com.tn  / remor123");
         log.info("═══════════════════════════════════════════════");
+    }
+
+    private void seedAdditionalPartners() {
+        seedGarageSupplementaire("garage3@gat.com.tn", "Ben Youssef", "Nour", "Garage El Menzah", "El Menzah", "+216 71 555 666", "50000003", 12, 4.6, 36.8450, 10.1650);
+        seedGarageSupplementaire("garage4@gat.com.tn", "Kefi", "Yassine", "Auto Service Lac", "Les Berges du Lac", "+216 71 777 999", "50000004", 10, 4.4, 36.8350, 10.2450);
+        seedExpertSupplementaire("expert3@gat.com.tn", "Jlassi", "Amel", "+216 22 888 111", "70000003", "Tunis, Ariana, Nabeul", 4.6, 36.8300, 10.2100);
+        seedExpertSupplementaire("expert4@gat.com.tn", "Gharbi", "Walid", "+216 22 999 222", "70000004", "Tunis, Sousse, Monastir", 4.5, 35.8300, 10.6400);
+        seedRemorqueurSupplementaire("remorqueur3@gat.com.tn", "Brahmi", "Sonia", "+216 99 555 666", "80000003", "La Marsa", 36.8780, 10.3250, 2);
+        seedRemorqueurSupplementaire("remorqueur4@gat.com.tn", "Ayari", "Mehdi", "+216 99 777 888", "80000004", "Ben Arous", 36.7500, 10.2300, 2);
+    }
+
+    private void seedGarageSupplementaire(String email, String nom, String prenom, String garageNom,
+                                           String ville, String telephone, String cin, int capacite,
+                                           double note, double latitude, double longitude) {
+        if (userRepository.findByEmail(email).isPresent()) return;
+        User user = userRepository.save(User.builder().email(email).password(passwordEncoder.encode("garage123"))
+                .nom(nom).prenom(prenom).telephone(telephone).cin(cin).role(Role.GARAGE).enabled(true).build());
+        garageRepository.save(Garage.builder().nom(garageNom).adresse(ville).ville(ville).codePostal("2000")
+                .telephone(telephone).email(email).capaciteMax(capacite).capaciteActuelle(0)
+                .specialites("Carrosserie, Mécanique, Diagnostic").statut(StatutGarage.ACTIF).note(note)
+                .conventionGat(true).delaiMoyenJours(6.0).latitude(latitude).longitude(longitude).user(user).build());
+        log.info("  ✔ Garage supplémentaire créé : {}", email);
+    }
+
+    private void seedExpertSupplementaire(String email, String nom, String prenom, String telephone,
+                                          String cin, String zone, double note, double latitude, double longitude) {
+        if (userRepository.findByEmail(email).isPresent()) return;
+        User user = userRepository.save(User.builder().email(email).password(passwordEncoder.encode("expert123"))
+                .nom(nom).prenom(prenom).telephone(telephone).cin(cin).role(Role.EXPERT).enabled(true).build());
+        expertRepository.save(Expert.builder().nom(nom).prenom(prenom).email(email).telephone(telephone)
+                .specialite("VOITURE_PARTICULIERE").zoneIntervention(zone).disponibilite(true)
+                .missionsActives(0).capaciteMax(8).note(note).latitude(latitude).longitude(longitude).user(user).build());
+        log.info("  ✔ Expert supplémentaire créé : {}", email);
+    }
+
+    private void seedRemorqueurSupplementaire(String email, String nom, String prenom, String telephone,
+                                              String cin, String localisation, double latitude,
+                                              double longitude, int capacite) {
+        if (userRepository.findByEmail(email).isPresent()) return;
+        User user = userRepository.save(User.builder().email(email).password(passwordEncoder.encode("remor123"))
+                .nom(nom).prenom(prenom).telephone(telephone).cin(cin).role(Role.REMORQUEUR).enabled(true).build());
+        remorqueurRepository.save(Remorqueur.builder().nom(nom).prenom(prenom).email(email).telephone(telephone)
+                .disponibilite(true).localisation(localisation).latitude(latitude).longitude(longitude)
+                .rayonIntervention(30).capacite(capacite).user(user).build());
+        log.info("  ✔ Remorqueur supplémentaire créé : {}", email);
     }
 
     // ─── ADMIN ───────────────────────────────────────────────────────────────
