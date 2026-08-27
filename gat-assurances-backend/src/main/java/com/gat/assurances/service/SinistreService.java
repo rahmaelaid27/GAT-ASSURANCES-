@@ -144,8 +144,6 @@ public class SinistreService {
                 if (!Boolean.TRUE.equals(remorqueur.getDisponibilite()))
                     throw new BusinessException("Le remorqueur sélectionné n'est pas disponible.");
                 demande.setRemorqueur(remorqueur);
-                remorqueur.setDisponibilite(false);
-                remorqueurRepository.save(remorqueur);
                 notificationService.envoyer(remorqueur.getUser(), "Demande de remorquage",
                         "Vous avez été choisi pour le dossier " + reference,
                         TypeNotification.ALERTE, sinistre.getId());

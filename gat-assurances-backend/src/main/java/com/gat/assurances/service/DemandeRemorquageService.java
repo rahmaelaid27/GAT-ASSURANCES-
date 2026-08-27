@@ -70,6 +70,9 @@ public class DemandeRemorquageService {
                 .orElseThrow(() -> new ResourceNotFoundException("Utilisateur introuvable"));
         Remorqueur remorqueur = remorqueurRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Remorqueur introuvable"));
+        if (demande.getRemorqueur() != null
+            && !demande.getRemorqueur().getId().equals(remorqueur.getId()))
+            throw new BusinessException("Cette demande est réservée à un autre remorqueur.");
 
         demande.setRemorqueur(remorqueur);
         demande.setStatut(StatutRemorquage.ACCEPTE);
@@ -134,8 +137,13 @@ public class DemandeRemorquageService {
         return demandeRepo.findActiveMissionsByRemorqueur(r.getId());
     }
 
-    public List<DemandeRemorquage> findPending() {
-        return demandeRepo.findAllPending();
+    public List<DemandeRemorquage> findPending(Authentication auth) {
+        User user = userRepository.findByEmail(auth.getName())
+                .orElseThrow(() -> new ResourceNotFoundException("Utilisateur introuvable"));
+        if (user.getRole() == Role.ADMIN) return demandeRepo.findAllPending();
+        Remorqueur remorqueur = remorqueurRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Remorqueur introuvable"));
+        return demandeRepo.findPendingForRemorqueur(remorqueur.getId());
     }
 
     public List<RemorqueurDto> findAvailableRemorqueurs() {

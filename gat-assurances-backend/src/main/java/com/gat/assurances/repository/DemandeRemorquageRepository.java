@@ -18,6 +18,11 @@ public interface DemandeRemorquageRepository extends JpaRepository<DemandeRemorq
 
     List<DemandeRemorquage> findByStatut(StatutRemorquage statut);
 
+    @Query("SELECT d FROM DemandeRemorquage d WHERE d.statut = 'EN_ATTENTE' " +
+           "AND (d.remorqueur IS NULL OR d.remorqueur.id = :remorqueurId) " +
+           "ORDER BY d.createdAt ASC")
+    List<DemandeRemorquage> findPendingForRemorqueur(Long remorqueurId);
+
     /** Demandes en attente visibles par les remorqueurs disponibles. */
     @Query("SELECT d FROM DemandeRemorquage d WHERE d.statut = 'EN_ATTENTE' " +
            "ORDER BY d.createdAt ASC")

@@ -46,8 +46,8 @@ public class DemandeRemorquageController {
     @Operation(summary = "Demandes en attente (visibles par les remorqueurs)")
     @GetMapping("/en-attente")
     @PreAuthorize("hasAnyRole('REMORQUEUR','ADMIN')")
-    public ResponseEntity<List<DemandeRemorquage>> pendantes() {
-        return ResponseEntity.ok(remorquageService.findPending());
+    public ResponseEntity<List<DemandeRemorquage>> pendantes(Authentication auth) {
+        return ResponseEntity.ok(remorquageService.findPending(auth));
     }
 
     @Operation(summary = "Remorqueurs disponibles pour une nouvelle déclaration")
