@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { DashboardService } from '../../../core/services/dashboard.service';
 import { DashboardRemorqueur } from '../../../core/models/dashboard.model';
+import { interval, startWith, switchMap } from 'rxjs';
 
 @Component({
   selector: 'app-remorqueur-dashboard',
@@ -65,7 +66,10 @@ export class RemorqueurDashboardComponent implements OnInit {
   constructor(private dashboardService: DashboardService) {}
 
   ngOnInit(): void {
-    this.dashboardService.getRemorqueur().subscribe({
+    interval(30000).pipe(
+      startWith(0),
+      switchMap(() => this.dashboardService.getRemorqueur())
+    ).subscribe({
       next: (d) => this.data.set(d),
       error: () => this.data.set({
         missionsCeMois: 0,

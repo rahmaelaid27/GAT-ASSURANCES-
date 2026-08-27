@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { DashboardService } from '../../../core/services/dashboard.service';
 import { DashboardGestionnaire } from '../../../core/models/dashboard.model';
 import { STATUT_LABELS, STATUT_COLORS } from '../../../core/models/sinistre.model';
+import { interval, startWith, switchMap } from 'rxjs';
 
 @Component({
   selector: 'app-gestionnaire-dashboard',
@@ -106,7 +107,10 @@ export class GestionnaireDashboardComponent implements OnInit {
   error = signal(false);
   constructor(private dashboardService: DashboardService) {}
   ngOnInit(): void {
-    this.dashboardService.getGestionnaire().subscribe({
+    interval(30000).pipe(
+      startWith(0),
+      switchMap(() => this.dashboardService.getGestionnaire())
+    ).subscribe({
       next: d => this.data.set(d),
       error: () => {
         this.error.set(true);

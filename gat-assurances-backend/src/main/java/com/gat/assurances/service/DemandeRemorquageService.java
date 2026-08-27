@@ -46,7 +46,7 @@ public class DemandeRemorquageService {
         sinistreRepository.save(sinistre);
 
         // Notifier tous les remorqueurs disponibles
-        List<Remorqueur> disponibles = remorqueurRepository.findAvailableWithCoordinates();
+        List<Remorqueur> disponibles = remorqueurRepository.findByDisponibiliteTrue();
         for (Remorqueur r : disponibles) {
             if (r.getUser() != null) {
                 notificationService.envoyer(r.getUser(),

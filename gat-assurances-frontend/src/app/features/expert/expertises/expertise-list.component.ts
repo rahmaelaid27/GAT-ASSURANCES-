@@ -33,7 +33,7 @@ export class ExpertiseListComponent implements OnInit {
   missions = signal<Mission[]>([]);
   constructor(private http: HttpClient) {}
   ngOnInit(): void {
-    this.http.get<Mission[]>('http://localhost:8081/api/missions/mes-missions')
+    this.http.get<Mission[]>('http://localhost:8081/api/missions/mes-missions-expert')
       .subscribe(m => this.missions.set(m));
   }
 }

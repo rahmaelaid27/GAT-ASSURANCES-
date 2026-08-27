@@ -2,6 +2,7 @@ import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DashboardService } from '../../../core/services/dashboard.service';
 import { DashboardManager } from '../../../core/models/dashboard.model';
+import { interval, startWith, switchMap } from 'rxjs';
 
 @Component({
   selector: 'app-manager-dashboard',
@@ -64,5 +65,10 @@ import { DashboardManager } from '../../../core/models/dashboard.model';
 export class ManagerDashboardComponent implements OnInit {
   data = signal<DashboardManager | null>(null);
   constructor(private dashboardService: DashboardService) {}
-  ngOnInit(): void { this.dashboardService.getManager().subscribe(d => this.data.set(d)); }
+  ngOnInit(): void {
+    interval(30000).pipe(
+      startWith(0),
+      switchMap(() => this.dashboardService.getManager())
+    ).subscribe(d => this.data.set(d));
+  }
 }

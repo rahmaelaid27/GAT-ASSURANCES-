@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { DashboardService } from '../../../core/services/dashboard.service';
 import { DashboardGarage } from '../../../core/models/dashboard.model';
+import { interval, startWith, switchMap } from 'rxjs';
 
 @Component({
   selector: 'app-garage-dashboard',
@@ -73,5 +74,10 @@ import { DashboardGarage } from '../../../core/models/dashboard.model';
 export class GarageDashboardComponent implements OnInit {
   data = signal<DashboardGarage | null>(null);
   constructor(private dashboardService: DashboardService) {}
-  ngOnInit(): void { this.dashboardService.getGarage().subscribe(d => this.data.set(d)); }
+  ngOnInit(): void {
+    interval(30000).pipe(
+      startWith(0),
+      switchMap(() => this.dashboardService.getGarage())
+    ).subscribe(d => this.data.set(d));
+  }
 }

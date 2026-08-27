@@ -24,11 +24,13 @@ public class DashboardService {
     private final GarageRepository garageRepository;
     private final ExpertRepository expertRepository;
     private final RemorqueurRepository remorqueurRepository;
+        private final DemandeRemorquageRepository demandeRemorquageRepository;
     private final VehiculeRepository vehiculeRepository;
     private final NotificationRepository notificationRepository;
     private final UserRepository userRepository;
     private final SinistreMapper sinistreMapper;
     private final MissionMapper missionMapper;
+    private final EvaluationRepository evaluationRepository;
 
     // ─── CLIENT ──────────────────────────────────────────────────────────────
     public DashboardClientDto dashboardClient(Authentication auth) {
@@ -100,7 +102,7 @@ public class DashboardService {
                 .missionsActives(actives.size())
                 .missionsEnCours(enCours)
                 .devisEnAttente(devisEnAttente)
-                .noteMoyenne(garage.getNote() != null ? garage.getNote() : 0)
+                .noteMoyenne(noteGarage(garage))
                 .notificationsNonLues(notificationRepository.countByUserIdAndLuFalse(user.getId()))
                 .missionsActives_list(actives.stream().limit(5).map(missionMapper::toDto).collect(Collectors.toList()))
                 .build();
@@ -124,7 +126,7 @@ public class DashboardService {
                 .totalExpertisesMois(missions.size())
                 .aPlanifier(aPlanifier)
                 .rapportsDeposes(rapportsDeposes)
-                .noteMoyenne(expert.getNote() != null ? expert.getNote() : 0)
+                .noteMoyenne(noteExpert(expert))
                 .notificationsNonLues(notificationRepository.countByUserIdAndLuFalse(user.getId()))
                 .missionsRecentes(missions.stream().limit(5).map(missionMapper::toDto).collect(Collectors.toList()))
                 .build();
@@ -136,8 +138,9 @@ public class DashboardService {
         Remorqueur remorqueur = remorqueurRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Remorqueur introuvable"));
 
-        List<DemandeRemorquage> missions = new java.util.ArrayList<>();
-        // Toutes missions du remorqueur
+        List<DemandeRemorquage> missions = demandeRemorquageRepository
+                .findByRemorqueurId(remorqueur.getId());
+        // Toutes les missions du remorqueur
         long enCours = missions.stream()
                 .filter(m -> m.getStatut() != StatutRemorquage.LIVRE
                           && m.getStatut() != StatutRemorquage.ANNULE).count();
@@ -156,6 +159,7 @@ public class DashboardService {
         long clotures = sinistreRepository.countByStatut(StatutSinistre.CLOTURE);
         long refuses = sinistreRepository.countByStatut(StatutSinistre.REFUSE);
         double taux = totalSinistres > 0 ? Math.round((double) clotures / totalSinistres * 100 * 10) / 10.0 : 0;
+        Double satisfaction = evaluationRepository.averageNote();
 
         return DashboardManagerDto.builder()
                 .totalSinistres(totalSinistres)
@@ -166,6 +170,7 @@ public class DashboardService {
                 .totalGarages(garageRepository.count())
                 .totalExperts(expertRepository.count())
                 .totalClients(clientRepository.count())
+                .satisfactionMoyenne(satisfaction != null ? Math.round(satisfaction * 10) / 10.0 : 0)
                 .build();
     }
 
@@ -184,5 +189,19 @@ public class DashboardService {
     private User getUser(Authentication auth) {
         return userRepository.findByEmail(auth.getName())
                 .orElseThrow(() -> new ResourceNotFoundException("Utilisateur introuvable"));
+    }
+
+    private double noteGarage(Garage garage) {
+        Double moyenne = evaluationRepository.averageNoteByCibleIdAndType(
+                garage.getId(), TypeEvaluation.GARAGE);
+        return moyenne != null ? Math.round(moyenne * 10) / 10.0
+                : (garage.getNote() != null ? garage.getNote() : 0);
+    }
+
+    private double noteExpert(Expert expert) {
+        Double moyenne = evaluationRepository.averageNoteByCibleIdAndType(
+                expert.getId(), TypeEvaluation.EXPERT);
+        return moyenne != null ? Math.round(moyenne * 10) / 10.0
+                : (expert.getNote() != null ? expert.getNote() : 0);
     }
 }
