@@ -1,6 +1,7 @@
 package com.gat.assurances.controller;
 
 import com.gat.assurances.dto.DemandeRemorquageDto;
+import com.gat.assurances.dto.RemorqueurDto;
 import com.gat.assurances.entity.DemandeRemorquage;
 import com.gat.assurances.entity.enums.StatutRemorquage;
 import com.gat.assurances.service.DemandeRemorquageService;
@@ -47,6 +48,13 @@ public class DemandeRemorquageController {
     @PreAuthorize("hasAnyRole('REMORQUEUR','ADMIN')")
     public ResponseEntity<List<DemandeRemorquage>> pendantes() {
         return ResponseEntity.ok(remorquageService.findPending());
+    }
+
+    @Operation(summary = "Remorqueurs disponibles pour une nouvelle déclaration")
+    @GetMapping("/disponibles")
+    @PreAuthorize("hasAnyRole('CLIENT','GESTIONNAIRE','ADMIN')")
+    public ResponseEntity<List<RemorqueurDto>> disponibles() {
+        return ResponseEntity.ok(remorquageService.findAvailableRemorqueurs());
     }
 
     @Operation(summary = "Mes missions de remorquage (remorqueur connecté)")

@@ -2,6 +2,7 @@ package com.gat.assurances.service;
 
 import com.gat.assurances.entity.*;
 import com.gat.assurances.entity.enums.*;
+import com.gat.assurances.dto.RemorqueurDto;
 import com.gat.assurances.exception.BusinessException;
 import com.gat.assurances.exception.ResourceNotFoundException;
 import com.gat.assurances.repository.*;
@@ -135,6 +136,21 @@ public class DemandeRemorquageService {
 
     public List<DemandeRemorquage> findPending() {
         return demandeRepo.findAllPending();
+    }
+
+    public List<RemorqueurDto> findAvailableRemorqueurs() {
+        return remorqueurRepository.findByDisponibiliteTrue().stream()
+                .map(r -> RemorqueurDto.builder()
+                        .id(r.getId())
+                        .nom(r.getNom())
+                        .prenom(r.getPrenom())
+                        .email(r.getEmail())
+                        .telephone(r.getTelephone())
+                        .disponibilite(r.getDisponibilite())
+                        .localisation(r.getLocalisation())
+                        .capacite(r.getCapacite())
+                        .build())
+                .toList();
     }
 
     public DemandeRemorquage getById(Long id) {
