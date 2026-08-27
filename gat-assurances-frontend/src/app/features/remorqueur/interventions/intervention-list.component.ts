@@ -2,6 +2,7 @@ import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { DemandeRemorquage } from '../../../core/models/remorqueur.model';
+import { interval, startWith, switchMap } from 'rxjs';
 
 @Component({
   selector: 'app-intervention-list',
@@ -77,15 +78,15 @@ export class InterventionListComponent implements OnInit {
   constructor(private http: HttpClient) {}
 
   ngOnInit(): void {
-    this.http.get<DemandeRemorquage[]>('http://localhost:8081/api/remorquages/en-attente').subscribe({
-      next: (r) => this.pending.set(Array.isArray(r) ? r : []),
-      error: () => this.pending.set([])
-    });
+    interval(30000).pipe(
+      startWith(0),
+      switchMap(() => this.http.get<DemandeRemorquage[]>('http://localhost:8081/api/remorquages/en-attente'))
+    ).subscribe({ next: (r) => this.pending.set(Array.isArray(r) ? r : []), error: () => this.pending.set([]) });
 
-    this.http.get<DemandeRemorquage[]>('http://localhost:8081/api/remorquages/mes-missions').subscribe({
-      next: (r) => this.missions.set(Array.isArray(r) ? r : []),
-      error: () => this.missions.set([])
-    });
+    interval(30000).pipe(
+      startWith(0),
+      switchMap(() => this.http.get<DemandeRemorquage[]>('http://localhost:8081/api/remorquages/mes-missions'))
+    ).subscribe({ next: (r) => this.missions.set(Array.isArray(r) ? r : []), error: () => this.missions.set([]) });
   }
 
   accepter(id: number): void {

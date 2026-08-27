@@ -28,6 +28,9 @@ public class SinistreDto {
     private String garageNom;
     private Long expertId;
     private String expertNom;
+    private Long remorqueurId;
+    private String remorqueurNom;
+    private Boolean vehiculeImmobilise;
     private Long gestionnaireId;
     // Champs optionnels pour création auto du véhicule
     private String vehiculeMarque;

@@ -6,6 +6,7 @@ import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../../core/services/auth.service';
 
 interface Vehicule { id:number; immatriculation:string; marque:string; modele:string; annee:number; typeVehicule:string; }
+interface Partenaire { id:number; nom:string; prenom:string; disponibilite:boolean; note?:number; }
 
 @Component({
   selector: 'app-sinistre-create',
@@ -166,7 +167,23 @@ interface Vehicule { id:number; immatriculation:string; marque:string; modele:st
                  style="background:#FFF3CD;border:1px solid #F5C518">
               🚛 Un remorqueur sera automatiquement notifié pour prendre en charge votre véhicule.
             </div>
+            <div class="mt-4 grid gap-4 sm:grid-cols-2">
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1.5">Remorqueur disponible <span class="text-gray-400 font-normal">(optionnel)</span></label>
+                <select [(ngModel)]="form.remorqueurId" name="remorqueurId" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:outline-none focus:border-[#E5162A]">
+                  <option [ngValue]="null">Notifier tous les remorqueurs disponibles</option>
+                  @for (r of remorqueursDisponibles(); track r.id) { <option [ngValue]="r.id">{{ r.prenom }} {{ r.nom }}{{ r.note ? ' · ' + r.note + '/5' : '' }}</option> }
+                </select>
+              </div>
+            </div>
           }
+          <div class="mt-4">
+            <label class="block text-sm font-semibold text-gray-700 mb-1.5">Expert disponible <span class="text-gray-400 font-normal">(optionnel)</span></label>
+            <select [(ngModel)]="form.expertId" name="expertId" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:outline-none focus:border-[#6B2D8B]">
+              <option [ngValue]="null">Affectation automatique</option>
+              @for (e of expertsDisponibles(); track e.id) { <option [ngValue]="e.id">{{ e.prenom }} {{ e.nom }}{{ e.note ? ' · ' + e.note + '/5' : '' }}</option> }
+            </select>
+          </div>
         </div>
       }
 
@@ -369,10 +386,14 @@ export class SinistreCreateComponent implements OnInit {
     description: '',
     photos: '',
     documents: '',
+    expertId: null,
+    remorqueurId: null,
   };
 
   vehicules  = signal<Vehicule[]>([]);
   vehiculeInfo = signal<Vehicule | null>(null);
+  experts = signal<Partenaire[]>([]);
+  remorqueurs = signal<Partenaire[]>([]);
   photos     = signal<string[]>([]);
   docs       = signal<string[]>([]);
   loading    = signal(false);
@@ -402,7 +423,14 @@ export class SinistreCreateComponent implements OnInit {
     if (u?.cin) this.form.cin = u.cin;
     this.http.get<Vehicule[]>('http://localhost:8081/api/vehicules/mes-vehicules')
       .subscribe({ next: v => this.vehicules.set(v), error: () => {} });
+    this.http.get<Partenaire[]>('http://localhost:8081/api/experts')
+      .subscribe({ next: p => this.experts.set(p), error: () => {} });
+    this.http.get<Partenaire[]>('http://localhost:8081/api/remorqueurs')
+      .subscribe({ next: p => this.remorqueurs.set(p), error: () => {} });
   }
+
+  expertsDisponibles() { return this.experts().filter(p => p.disponibilite !== false); }
+  remorqueursDisponibles() { return this.remorqueurs().filter(p => p.disponibilite !== false); }
 
   suggestions = signal<Vehicule[]>([]);
 
@@ -471,6 +499,8 @@ export class SinistreCreateComponent implements OnInit {
       photos: this.photos().join(','),
       documents: this.docs().join(','),
       vehiculeImmobilise: this.form.vehiculeImmobilise,
+      expertId: this.form.expertId,
+      remorqueurId: this.form.remorqueurId,
     };
     this.http.post<any>('http://localhost:8081/api/sinistres', payload).subscribe({
       next: (s) => { this.loading.set(false); this.router.navigate(['/client/sinistres', s.id]); },

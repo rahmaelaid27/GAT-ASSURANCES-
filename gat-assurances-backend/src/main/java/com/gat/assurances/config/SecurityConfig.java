@@ -89,9 +89,12 @@ public class SecurityConfig {
                 .requestMatchers("/missions/**").authenticated()
 
                 // Experts
-                .requestMatchers(HttpMethod.GET, "/experts").hasAnyRole("GESTIONNAIRE","MANAGER","ADMIN")
+                .requestMatchers(HttpMethod.GET, "/experts").hasAnyRole("CLIENT","GESTIONNAIRE","MANAGER","ADMIN")
                 .requestMatchers(HttpMethod.POST, "/experts").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/experts/**").hasRole("ADMIN")
+
+                // Le client choisit un partenaire disponible lors de la déclaration
+                .requestMatchers(HttpMethod.GET, "/remorqueurs").hasAnyRole("CLIENT","GESTIONNAIRE","MANAGER","ADMIN")
 
                 // Clients
                 .requestMatchers(HttpMethod.GET, "/clients").hasAnyRole("GESTIONNAIRE","MANAGER","ADMIN")

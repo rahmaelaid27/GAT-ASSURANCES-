@@ -28,6 +28,10 @@ public class SinistreService {
     private final ContratRepository contratRepository;
     private final GestionnaireRepository gestionnaireRepository;
     private final GarageRepository garageRepository;
+    private final ExpertRepository expertRepository;
+    private final RemorqueurRepository remorqueurRepository;
+    private final DemandeRemorquageRepository demandeRemorquageRepository;
+    private final MissionRepository missionRepository;
     private final UserRepository userRepository;
     private final NotificationService notificationService;
     private final ExpertAffectationService expertAffectationService;
@@ -105,6 +109,57 @@ public class SinistreService {
 
         // Affectation automatique gestionnaire
         affecter(sinistre);
+
+        if (dto.getExpertId() != null) {
+            Expert expert = expertRepository.findById(dto.getExpertId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Expert", dto.getExpertId()));
+            if (!Boolean.TRUE.equals(expert.getDisponibilite()))
+                throw new BusinessException("L'expert sélectionné n'est pas disponible.");
+            sinistre.setExpert(expert);
+            sinistre = sinistreRepository.save(sinistre);
+                missionRepository.save(Mission.builder()
+                    .sinistre(sinistre)
+                    .expert(expert)
+                    .typeMission(TypeMission.EXPERTISE)
+                    .statut(StatutMission.EN_ATTENTE)
+                    .description("Mission d'expertise choisie par le client pour le sinistre " + reference)
+                    .build());
+                expert.setMissionsActives(expert.getMissionsActives() != null ? expert.getMissionsActives() + 1 : 1);
+                expertRepository.save(expert);
+            notificationService.envoyer(expert.getUser(), "Nouvelle expertise assignée",
+                    "Vous avez été choisi pour le dossier " + reference,
+                    TypeNotification.INFO, sinistre.getId());
+        }
+
+        if (Boolean.TRUE.equals(dto.getVehiculeImmobilise())) {
+            DemandeRemorquage demande = DemandeRemorquage.builder()
+                    .sinistre(sinistre)
+                    .localisationDepart(sinistre.getLocalite() != null ? sinistre.getLocalite() : "À préciser")
+                    .localisationDestination("Garage à définir")
+                    .statut(StatutRemorquage.EN_ATTENTE)
+                    .build();
+            if (dto.getRemorqueurId() != null) {
+                Remorqueur remorqueur = remorqueurRepository.findById(dto.getRemorqueurId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Remorqueur", dto.getRemorqueurId()));
+                if (!Boolean.TRUE.equals(remorqueur.getDisponibilite()))
+                    throw new BusinessException("Le remorqueur sélectionné n'est pas disponible.");
+                demande.setRemorqueur(remorqueur);
+                remorqueur.setDisponibilite(false);
+                remorqueurRepository.save(remorqueur);
+                notificationService.envoyer(remorqueur.getUser(), "Demande de remorquage",
+                        "Vous avez été choisi pour le dossier " + reference,
+                        TypeNotification.ALERTE, sinistre.getId());
+            } else {
+                remorqueurRepository.findByDisponibiliteTrue().forEach(r -> {
+                    if (r.getUser() != null) notificationService.envoyer(r.getUser(), "Demande de remorquage",
+                            "Nouvelle demande disponible pour le dossier " + reference,
+                            TypeNotification.ALERTE, demande.getSinistre().getId());
+                });
+            }
+            demandeRemorquageRepository.save(demande);
+            sinistre.setStatut(StatutSinistre.REMORQUAGE_EN_COURS);
+            sinistre = sinistreRepository.save(sinistre);
+        }
 
         log.info("Sinistre {} déclaré par {}", reference, user.getEmail());
         return sinistre;
