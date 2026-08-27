@@ -1,0 +1,104 @@
+<div class="min-h-screen bg-gradient-to-br from-gray-50 via-white to-purple-50/30">
+  <div class="relative overflow-hidden bg-gradient-to-r from-[#5E2B8A] via-[#C2173F] to-[#F35A22]">
+    <div class="max-w-4xl mx-auto px-4 py-16 lg:py-20 relative text-center">
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/15 backdrop-blur-sm text-white/90 text-sm font-medium mb-6">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        Service Public - Suivi de sinistre
+      </div>
+      <h1 class="text-3xl sm:text-5xl font-extrabold text-white mb-4">Suivez votre sinistre</h1>
+      <p class="text-lg text-white/80 max-w-2xl mx-auto">Saisissez l'immatriculation de votre vehicule pour consulter l'etat de vos declarations de sinistre.</p>
+    </div>
+  </div>
+
+  <div class="max-w-3xl mx-auto px-4 -mt-8 relative z-10">
+    <div class="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 lg:p-8">
+      <form (ngSubmit)="search()" class="flex flex-col sm:flex-row gap-4">
+        <div class="flex-1 relative">
+          <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+          <input type="text" [(ngModel)]="immatriculation" name="immatriculation"
+            class="w-full pl-12 pr-4 py-4 border-2 border-gray-200 rounded-xl text-lg focus:border-[#5E2B8A] focus:ring-2 focus:ring-[#5E2B8A]/20 transition-all bg-white placeholder-gray-400"
+            placeholder="Ex: 123 TU 456" required>
+        </div>
+        <button type="submit"
+          class="px-8 py-4 bg-gradient-to-r from-[#5E2B8A] via-[#C2173F] to-[#F35A22] text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-purple-500/25 transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50"
+          [disabled]="loading || !immatriculation.trim()">
+          <ng-container *ngIf="loading">
+            <svg class="animate-spin h-5 w-5" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+          </ng-container>
+          {{ loading ? 'Recherche...' : 'Rechercher' }}
+        </button>
+      </form>
+      <p *ngIf="errorMessage" class="mt-4 text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-4 py-3">{{ errorMessage }}</p>
+    </div>
+  </div>
+
+  <div class="max-w-4xl mx-auto px-4 py-12">
+    <ng-container *ngIf="sinistres.length > 0">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-xl font-bold text-gray-800">{{ sinistres.length }} sinistre(s) trouve(s) pour <span class="text-[#5E2B8A]">{{ immatriculation }}</span></h2>
+      </div>
+      <div class="space-y-4">
+        <div *ngFor="let s of sinistres" class="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg hover:border-transparent transition-all duration-300 group">
+          <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div class="flex-1 space-y-2">
+              <div class="flex items-center gap-3">
+                <span class="text-lg font-bold text-gray-900">{{ s.reference }}</span>
+                <span class="badge" [class]="getStatusClass(s.statut)">{{ getStatusLabel(s.statut) }}</span>
+              </div>
+              <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
+                <div><span class="text-gray-400">Date declaration:</span><span class="font-medium text-gray-700 ml-1">{{ s.dateDeclaration | date:'dd/MM/yyyy' }}</span></div>
+                <div><span class="text-gray-400">Date sinistre:</span><span class="font-medium text-gray-700 ml-1">{{ s.dateSinistre | date:'dd/MM/yyyy' }}</span></div>
+                <div><span class="text-gray-400">Type:</span><span class="font-medium text-gray-700 ml-1">{{ s.typeSinistre || 'N/A' }}</span></div>
+                <div class="col-span-2 sm:col-span-1"><span class="text-gray-400">Lieu:</span><span class="font-medium text-gray-700 ml-1">{{ s.lieu || s.gouvernorat || 'N/A' }}</span></div>
+              </div>
+            </div>
+            <a [routerLink]="['/sinistres', s.id]"
+               class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-[#5E2B8A] to-[#C2173F] rounded-xl hover:shadow-lg hover:shadow-purple-500/25 transition-all duration-300 group-hover:scale-105 shrink-0">
+              Voir details
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+            </a>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="searched && sinistres.length === 0 && !loading">
+      <div class="text-center py-16">
+        <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+          <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+        <h3 class="text-xl font-semibold text-gray-700 mb-2">Aucun sinistre trouve</h3>
+        <p class="text-gray-500 mb-6">Aucune declaration de sinistre pour l'immatriculation <strong>{{ immatriculation }}</strong>.</p>
+        <a routerLink="/sinistres/new" class="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-white bg-gradient-to-r from-[#5E2B8A] via-[#C2173F] to-[#F35A22] rounded-xl hover:shadow-lg transition-all">Declarer un nouveau sinistre</a>
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="!searched && sinistres.length === 0 && !loading">
+      <div class="text-center py-16">
+        <div class="w-20 h-20 bg-purple-50 rounded-full flex items-center justify-center mx-auto mb-6">
+          <svg class="w-10 h-10 text-[#5E2B8A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+        </div>
+        <h3 class="text-xl font-semibold text-gray-700 mb-2">Recherchez votre sinistre</h3>
+        <p class="text-gray-500 max-w-md mx-auto">Entrez l'immatriculation de votre vehicule (ex: 123 TU 456) pour consulter l'etat de vos declarations.</p>
+      </div>
+    </ng-container>
+  </div>
+
+  <footer class="bg-gray-50 border-t border-gray-200 py-8 mt-8">
+    <div class="max-w-4xl mx-auto px-4 text-center">
+      <p class="text-sm text-gray-500">
+        <a routerLink="/" class="text-[#5E2B8A] hover:text-[#C2173F] font-medium">Retour a l'accueil</a>
+        &nbsp;&bull;&nbsp;
+        <a routerLink="/sinistres/new" class="text-[#5E2B8A] hover:text-[#C2173F] font-medium">Declarer un sinistre</a>
+      </p>
+      <p class="text-xs text-gray-400 mt-2">Service public de suivi des sinistres - GAT Assurances</p>
+    </div>
+  </footer>
+</div>
+

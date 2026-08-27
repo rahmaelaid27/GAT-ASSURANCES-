@@ -1,0 +1,77 @@
+import { Component, OnInit, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
+import { DashboardService } from '../../../core/services/dashboard.service';
+import { DashboardGarage } from '../../../core/models/dashboard.model';
+
+@Component({
+  selector: 'app-garage-dashboard',
+  standalone: true,
+  imports: [CommonModule, RouterLink],
+  template: `
+    <div class="p-6 space-y-6">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900">Dashboard Garage</h1>
+        <p class="text-gray-500 text-sm mt-1">Vos missions et plannings</p>
+      </div>
+
+      @if (data()) {
+        <!-- KPI -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+            <p class="text-sm text-gray-500">Missions actives</p>
+            <p class="text-3xl font-bold text-gray-900 mt-1">{{ data()!.missionsActives }}</p>
+          </div>
+          <div class="bg-white rounded-xl border border-blue-100 shadow-sm p-5">
+            <p class="text-sm text-blue-600">En cours</p>
+            <p class="text-3xl font-bold text-blue-700 mt-1">{{ data()!.missionsEnCours }}</p>
+          </div>
+          <div class="bg-white rounded-xl border border-amber-100 shadow-sm p-5">
+            <p class="text-sm text-amber-600">Devis manquants</p>
+            <p class="text-3xl font-bold text-amber-700 mt-1">{{ data()!.devisEnAttente }}</p>
+          </div>
+          <div class="bg-white rounded-xl border border-yellow-100 shadow-sm p-5">
+            <p class="text-sm text-yellow-600">Note moyenne</p>
+            <p class="text-3xl font-bold text-yellow-700 mt-1">{{ data()!.noteMoyenne | number:'1.1-1' }} ⭐</p>
+          </div>
+        </div>
+
+        <!-- Missions actives -->
+        <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-semibold text-gray-800">Mes missions</h2>
+            <a routerLink="/garage/missions" class="text-sm text-blue-600 hover:underline">Voir tout</a>
+          </div>
+          @if ((data()!.missionsActives_list && data()!.missionsActives_list.length === 0)) {            <p class="text-gray-400 text-sm text-center py-6">Aucune mission en cours.</p>
+          } @else {
+            <div class="space-y-3">
+              @for (m of data()!.missionsActives_list; track m.id) {
+                <div class="flex items-center justify-between p-3 rounded-lg bg-gray-50">
+                  <div>
+                    <p class="font-medium text-gray-900">{{ m.sinistreReference }}</p>
+                    <p class="text-xs text-gray-500">{{ m.typeMission }} — {{ m.avancementGarage ?? m.statut }}</p>
+                  </div>
+                  <div class="flex gap-2">
+                    <a [routerLink]="['/garage/missions', m.id]"
+                       class="text-blue-600 text-sm hover:underline">Gérer</a>
+                    <a [routerLink]="['/garage/missions', m.id, 'forum']"
+                       class="text-indigo-600 text-sm hover:underline">Forum</a>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="flex justify-center py-20">
+          <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
+        </div>
+      }
+    </div>
+  `
+})
+export class GarageDashboardComponent implements OnInit {
+  data = signal<DashboardGarage | null>(null);
+  constructor(private dashboardService: DashboardService) {}
+  ngOnInit(): void { this.dashboardService.getGarage().subscribe(d => this.data.set(d)); }
+}

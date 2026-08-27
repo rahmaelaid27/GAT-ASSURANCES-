@@ -1,0 +1,53 @@
+<div class="max-w-4xl mx-auto space-y-6">
+  <div class="flex items-center gap-3">
+    <a routerLink="/sinistres" class="p-2 rounded-lg hover:bg-gray-100 text-gray-600">&larr;</a>
+    <div class="flex-1">
+      <h1 class="text-2xl font-bold text-gray-800">Sinistre {{ sinistre?.reference }}</h1>
+      <p class="text-gray-500">D&eacute;tails du sinistre</p>
+    </div>
+    <a [routerLink]="['/forum', sinistre?.id]" class="btn-secondary">Forum</a>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="lg:col-span-2 space-y-6">
+      <div class="card">
+        <h3 class="font-semibold text-gray-800 mb-4">Informations</h3>
+        <div class="grid grid-cols-2 gap-4 text-sm">
+          <div><span class="text-gray-500">R&eacute;f&eacute;rence:</span> <span class="font-medium">{{ sinistre?.reference }}</span></div>
+          <div><span class="text-gray-500">Statut:</span> <span class="badge" [class]="getStatusClass(sinistre?.statut)">{{ getStatusLabel(sinistre?.statut) }}</span></div>
+          <div><span class="text-gray-500">Date d&eacute;claration:</span> <span class="font-medium">{{ sinistre?.dateDeclaration | date:'dd/MM/yyyy' }}</span></div>
+          <div><span class="text-gray-500">Date sinistre:</span> <span class="font-medium">{{ sinistre?.dateSinistre | date:'dd/MM/yyyy' }}</span></div>
+          <div class="col-span-2"><span class="text-gray-500">Lieu:</span> <span class="font-medium">{{ sinistre?.lieu }}</span></div>
+          <div class="col-span-2"><span class="text-gray-500">Description:</span> <p class="mt-1 text-gray-700">{{ sinistre?.description }}</p></div>
+      </div>
+
+      <div *ngIf="canChangeStatus" class="card border-2 border-dashed border-gray-200">
+        <h3 class="font-semibold text-gray-800 mb-4">Changer le statut</h3>
+        <div class="flex flex-wrap gap-3">
+          <button *ngFor="let s of availableStatuses" (click)="changeStatut(s)" class="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200" [class]="getStatusBtnClass(s)" [disabled]="loading">{{ getStatusLabel(s) }}</button>
+        </div>
+    </div>
+
+    <div class="space-y-6">
+      <div class="card">
+        <h3 class="font-semibold text-gray-800 mb-4">Client</h3>
+        <p class="font-medium">{{ sinistre?.clientNom }}</p>
+        <a [routerLink]="['/clients', sinistre?.clientId]" class="text-sm text-primary-600">Voir le client</a>
+      </div>
+      <div class="card">
+        <h3 class="font-semibold text-gray-800 mb-4">V&eacute;hicule</h3>
+        <p class="font-medium">{{ sinistre?.vehiculeImmatriculation }}</p>
+      </div>
+      <div class="card">
+        <h3 class="font-semibold text-gray-800 mb-4">Missions ({{ missions.length }})</h3>
+        <div *ngIf="missions.length > 0">
+          <div *ngFor="let m of missions" class="text-sm p-3 border-b last:border-0 hover:bg-gray-50 rounded-lg transition-colors">
+            <p class="font-medium text-gray-800">{{ m.typeMission }}</p>
+            <span class="badge" [class]="getMissionStatusClass(m.statut)">{{ m.statut }}</span>
+            <p *ngIf="m.garageNom" class="text-xs text-gray-500 mt-1">Garage: {{ m.garageNom }}</p>
+            <p *ngIf="m.expertNom" class="text-xs text-gray-500 mt-1">Expert: {{ m.expertNom }}</p>
+            <p *ngIf="m.remorqueurNom" class="text-xs text-gray-500 mt-1">Remorqueur: {{ m.remorqueurNom }}</p>
+          </div>
+        <p *ngIf="missions.length === 0" class="text-gray-400 text-sm">Aucune mission</p>
+      </div>
+  </div>

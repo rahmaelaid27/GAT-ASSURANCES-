@@ -1,0 +1,113 @@
+<div class="max-w-3xl mx-auto space-y-6">
+  <div class="flex items-center gap-3">
+    <a routerLink="/sinistres" class="p-2 rounded-lg hover:bg-gray-100 text-gray-600">&larr;</a>
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800">Declarer un sinistre</h1>
+      <p class="text-gray-500">Saisissez les informations de la declaration</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-6">
+      <div *ngIf="currentUserRole === 'CLIENT' && showVehicleForm" class="border-2 border-[#5E2B8A]/20 rounded-xl p-6 bg-white">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-[#5E2B8A]/10 to-[#C2173F]/10 flex items-center justify-center">
+            <svg class="w-5 h-5 text-[#5E2B8A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <div>
+            <h2 class="text-lg font-bold text-gray-800">Informations du vehicule</h2>
+            <p class="text-xs text-gray-500">Veuillez remplir les informations de votre vehicule</p>
+          </div>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-4">
+          <div>
+            <label class="form-label">Marque *</label>
+            <input type="text" formControlName="vehiculeMarque" class="form-input" placeholder="Ex : Renault, Peugeot..." title="Marque du véhicule">
+          </div>
+          <div>
+            <label class="form-label">Modele *</label>
+            <input type="text" formControlName="vehiculeModele" class="form-input" placeholder="Ex : Clio, 208..." title="Modèle du véhicule">
+          </div>
+          <div>
+            <label class="form-label">Annee *</label>
+            <input type="number" formControlName="vehiculeAnnee" class="form-input" placeholder="Ex : 2020" title="Année du véhicule">
+          </div>
+          <div>
+            <label class="form-label">Couleur</label>
+            <input type="text" formControlName="vehiculeCouleur" class="form-input" placeholder="Ex : Rouge, Noir..." title="Couleur du véhicule">
+          </div>
+          <div>
+            <label class="form-label">Immatriculation *</label>
+            <input type="text" formControlName="immatriculation" class="form-input" placeholder="Ex : 123 TU 456" title="Immatriculation du véhicule">
+          </div>
+          <div>
+            <label class="form-label">Type de vehicule *</label>
+            <select formControlName="vehiculeType" class="form-input" title="Type de véhicule">
+              <option *ngFor="let t of typeVehicules" [value]="t">{{ t }}</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="currentUserRole !== 'CLIENT'" class="space-y-4">
+        <div>
+          <label class="form-label">CIN du client *</label>
+          <input type="text" formControlName="cin" class="form-input" maxlength="8" inputmode="numeric" placeholder="Ex : 01234567" title="CIN du client">
+          <p class="text-xs text-gray-400 mt-1">Le sinistre sera declare avec ce CIN.</p>
+        </div>
+        <div>
+          <label class="form-label">Immatriculation du vehicule *</label>
+          <input type="text" formControlName="immatriculation" class="form-input" placeholder="Ex : 123 TU 456" title="Immatriculation du véhicule">
+        </div>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-4">
+        <div>
+          <label class="form-label">Date du sinistre *</label>
+          <input type="date" formControlName="dateSinistre" class="form-input" [max]="today" title="Date du sinistre">
+        </div>
+        <div>
+          <label class="form-label">Gouvernorat *</label>
+          <select formControlName="gouvernorat" class="form-input" title="Gouvernorat">
+            <option value="">Selectionnez un gouvernorat</option>
+            <option *ngFor="let g of gouvernorats" [value]="g">{{ g }}</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">Localite</label>
+          <input type="text" formControlName="localite" class="form-input" placeholder="Ex : Tunis" title="Localité">
+        </div>
+        <div>
+          <label class="form-label">Type de sinistre *</label>
+          <select formControlName="typeSinistre" class="form-input" title="Type de sinistre">
+            <option value="">Selectionnez un type</option>
+            <option value="ACCIDENT">Accident</option>
+            <option value="VOL">Vol</option>
+            <option value="INCENDIE">Incendie</option>
+            <option value="BRIS_GLACE">Bris de glace</option>
+            <option value="CATASTROPHE">Catastrophe naturelle</option>
+            <option value="PANNE">Panne mecanique</option>
+            <option value="AUTRE">Autre</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label class="form-label">Description</label>
+        <textarea formControlName="description" class="form-input" rows="4" placeholder="Decrivez les circonstances du sinistre..." title="Description du sinistre"></textarea>
+      </div>
+
+      <p *ngIf="errorMessage" class="text-sm text-red-600">{{ errorMessage }}</p>
+
+      <div class="flex justify-end gap-3 border-t border-gray-100 pt-4">
+        <a routerLink="/sinistres" class="btn-outline">Annuler</a>
+        <button type="submit" class="btn-primary" [disabled]="form.invalid || submitting">
+          {{ submitting ? 'Declaration...' : 'Declarer le sinistre' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
