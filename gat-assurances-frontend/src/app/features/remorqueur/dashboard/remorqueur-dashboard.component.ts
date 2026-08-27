@@ -24,7 +24,7 @@ import { interval, startWith, switchMap } from 'rxjs';
       </div>
 
       @if (data()) {
-        <div class="grid grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="grid grid-cols-2 lg:grid-cols-5 gap-4">
           <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
             <p class="text-sm text-gray-500">Missions ce mois</p>
             <p class="text-3xl font-bold text-gray-900 mt-1">{{ data()!.missionsCeMois }}</p>
@@ -32,6 +32,14 @@ import { interval, startWith, switchMap } from 'rxjs';
           <div class="bg-white rounded-xl border border-blue-100 shadow-sm p-5">
             <p class="text-sm text-blue-600">En cours</p>
             <p class="text-3xl font-bold text-blue-700 mt-1">{{ data()!.missionsEnCours }}</p>
+          </div>
+          <div class="bg-white rounded-xl border border-green-100 shadow-sm p-5">
+            <p class="text-sm text-green-600">Terminées</p>
+            <p class="text-3xl font-bold text-green-700 mt-1">{{ data()!.missionsTerminees }}</p>
+          </div>
+          <div class="bg-white rounded-xl border border-amber-100 shadow-sm p-5">
+            <p class="text-sm text-amber-600">Demandes disponibles</p>
+            <p class="text-3xl font-bold text-amber-700 mt-1">{{ data()!.demandesDisponibles }}</p>
           </div>
           <div class="bg-white rounded-xl border border-purple-100 shadow-sm p-5">
             <p class="text-sm text-purple-600">Notifications</p>
@@ -44,11 +52,11 @@ import { interval, startWith, switchMap } from 'rxjs';
           <div class="flex flex-wrap gap-3">
             <a routerLink="/remorqueur/interventions"
                class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 transition">
-              Mes interventions
+              Mes interventions ({{ data()!.missionsTotal }})
             </a>
             <a routerLink="/remorqueur/interventions" [queryParams]="{statut:'EN_ATTENTE'}"
                class="bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700 transition">
-              Demandes disponibles
+              Demandes disponibles ({{ data()!.demandesDisponibles }})
             </a>
           </div>
         </div>
@@ -73,6 +81,9 @@ export class RemorqueurDashboardComponent implements OnInit {
       next: (d) => this.data.set(d),
       error: () => this.data.set({
         missionsCeMois: 0,
+        missionsTotal: 0,
+        missionsTerminees: 0,
+        demandesDisponibles: 0,
         missionsEnCours: 0,
         disponible: true,
         notificationsNonLues: 0

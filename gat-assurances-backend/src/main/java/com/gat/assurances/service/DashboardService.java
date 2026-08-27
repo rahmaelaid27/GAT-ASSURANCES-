@@ -11,6 +11,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.time.LocalDate;
 import java.util.stream.Collectors;
 
 @Service
@@ -140,13 +141,24 @@ public class DashboardService {
 
         List<DemandeRemorquage> missions = demandeRemorquageRepository
                 .findByRemorqueurId(remorqueur.getId());
+        long demandesDisponibles = demandeRemorquageRepository
+                .findPendingForRemorqueur(remorqueur.getId()).size();
+        long missionsTerminees = missions.stream()
+                .filter(m -> m.getStatut() == StatutRemorquage.LIVRE).count();
+        long missionsCeMois = missions.stream()
+                .filter(m -> m.getCreatedAt() != null
+                        && m.getCreatedAt().toLocalDate().getMonth() == LocalDate.now().getMonth()
+                        && m.getCreatedAt().toLocalDate().getYear() == LocalDate.now().getYear()).count();
         // Toutes les missions du remorqueur
         long enCours = missions.stream()
                 .filter(m -> m.getStatut() != StatutRemorquage.LIVRE
                           && m.getStatut() != StatutRemorquage.ANNULE).count();
 
         return DashboardRemorqueurDto.builder()
-                .missionsCeMois(missions.size())
+                .missionsCeMois(missionsCeMois)
+                .missionsTotal(missions.size())
+                .missionsTerminees(missionsTerminees)
+                .demandesDisponibles(demandesDisponibles)
                 .missionsEnCours((int) enCours)
                 .disponible(remorqueur.getDisponibilite())
                 .notificationsNonLues(notificationRepository.countByUserIdAndLuFalse(user.getId()))

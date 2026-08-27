@@ -16,6 +16,9 @@ export class DashboardService {
   private static normalizeRemorqueur(data?: Partial<DashboardRemorqueur> | null): DashboardRemorqueur {
     return {
       missionsCeMois: Number(data?.missionsCeMois ?? 0),
+      missionsTotal: Number(data?.missionsTotal ?? 0),
+      missionsTerminees: Number(data?.missionsTerminees ?? 0),
+      demandesDisponibles: Number(data?.demandesDisponibles ?? 0),
       missionsEnCours: Number(data?.missionsEnCours ?? 0),
       disponible: Boolean(data?.disponible ?? true),
       notificationsNonLues: Number(data?.notificationsNonLues ?? 0)

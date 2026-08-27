@@ -42,6 +42,9 @@ export interface DashboardExpert {
 
 export interface DashboardRemorqueur {
   missionsCeMois: number;
+  missionsTotal: number;
+  missionsTerminees: number;
+  demandesDisponibles: number;
   missionsEnCours: number;
   disponible: boolean;
   notificationsNonLues: number;
