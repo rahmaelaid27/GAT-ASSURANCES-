@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 /**
@@ -40,15 +41,30 @@ public class GarageRecommandationService {
         Sinistre sinistre = sinistreRepository.findById(sinistreId)
                 .orElseThrow(() -> new ResourceNotFoundException("Sinistre", sinistreId));
 
-        double[] sinistreCoords = geoService.parseCoords(sinistre.getCoordonneesGps());
+        double[] parsedCoords = geoService.parseCoords(sinistre.getCoordonneesGps());
+        final double[] sinistreCoords = parsedCoords != null
+                ? parsedCoords : geoService.coordsForGouvernorat(sinistre.getGouvernorat());
 
         List<Garage> garages = garageRepository.findAvailableWithCoordinates();
+        List<Garage> garagesLocaux = garages.stream()
+                .filter(g -> memeGouvernorat(g.getVille(), sinistre.getGouvernorat()))
+                .collect(Collectors.toList());
+        if (!garagesLocaux.isEmpty()) garages = garagesLocaux;
 
         return garages.stream()
                 .map(g -> score(g, sinistre, sinistreCoords))
                 .sorted(Comparator.comparingDouble(GarageRecommandationDto::getScore).reversed())
                 .collect(Collectors.toList());
     }
+
+        private boolean memeGouvernorat(String ville, String gouvernorat) {
+                if (ville == null || gouvernorat == null) return false;
+                String villeNormalisee = ville.trim().toLowerCase(Locale.ROOT);
+                String gouvernoratNormalise = gouvernorat.trim().toLowerCase(Locale.ROOT);
+                return villeNormalisee.equals(gouvernoratNormalise)
+                                || villeNormalisee.contains(gouvernoratNormalise)
+                                || gouvernoratNormalise.contains(villeNormalisee);
+        }
 
     private GarageRecommandationDto score(Garage g, Sinistre sinistre, double[] sinistreCoords) {
 

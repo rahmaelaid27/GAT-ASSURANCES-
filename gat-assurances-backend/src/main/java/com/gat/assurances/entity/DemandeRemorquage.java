@@ -51,7 +51,7 @@ public class DemandeRemorquage {
     @Builder.Default
     private StatutRemorquage statut = StatutRemorquage.EN_ATTENTE;
 
-    @Column(name = "photos_intervention", columnDefinition = "TEXT")
+    @Column(name = "photos_intervention", columnDefinition = "LONGTEXT")
     private String photosIntervention;
 
     @Column(name = "date_acceptation")

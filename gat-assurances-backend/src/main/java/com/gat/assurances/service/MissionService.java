@@ -3,6 +3,7 @@ package com.gat.assurances.service;
 import com.gat.assurances.dto.MissionDto;
 import com.gat.assurances.entity.*;
 import com.gat.assurances.entity.enums.StatutMission;
+import com.gat.assurances.entity.enums.StatutSinistre;
 import com.gat.assurances.entity.enums.TypeNotification;
 import com.gat.assurances.exception.BusinessException;
 import com.gat.assurances.exception.ResourceNotFoundException;
@@ -301,12 +302,23 @@ public class MissionService {
         switch (avancement) {
             case "EN_DIAGNOSTIC"       -> m.setStatut(StatutMission.EN_DIAGNOSTIC);
             case "EN_COMMANDE_PIECES"  -> m.setStatut(StatutMission.EN_COMMANDE_PIECES);
-            case "EN_REPARATION"       -> m.setStatut(StatutMission.EN_REPARATION);
+            case "EN_REPARATION"       -> {
+                m.setStatut(StatutMission.EN_REPARATION);
+                mettreAJourStatutSinistre(m, StatutSinistre.EN_REPARATION);
+            }
             case "REPARATION_TERMINEE" -> m.setStatut(StatutMission.REPARATION_TERMINEE);
         }
+        if ("REPARATION_TERMINEE".equals(avancement))
+            mettreAJourStatutSinistre(m, StatutSinistre.EN_ATTENTE_VALIDATION);
         m = missionRepository.save(m);
-        notifClient(m, "Avancement réparation",
+        if ("REPARATION_TERMINEE".equals(avancement)) {
+            notifClient(m, "Réparation terminée",
+                "La réparation de votre véhicule est terminée pour le dossier " + ref(m)
+                + ". Le garage va maintenant déposer la facture finale.");
+        } else {
+            notifClient(m, "Avancement réparation",
                 "Votre dossier " + ref(m) + " : " + avancement.replace("_", " "));
+        }
         return mapToDto(m);
     }
 
@@ -318,9 +330,17 @@ public class MissionService {
     public MissionDto deposerFacture(Long id, String facture, BigDecimal montant, Authentication auth) {
         Mission m = getMission(id);
         verifierAccesGarage(m, auth);
+        if (m.getStatut() != StatutMission.REPARATION_TERMINEE
+            && m.getStatut() != StatutMission.TERMINEE)
+            throw new BusinessException("La facture peut être déposée uniquement après la fin de la réparation.");
+        if (facture == null || facture.isBlank())
+            throw new BusinessException("Le détail de la facture est obligatoire.");
+        if (montant == null || montant.compareTo(BigDecimal.ZERO) <= 0)
+            throw new BusinessException("Le montant de la facture doit être supérieur à 0.");
         m.setFacture(facture);
         m.setMontantFacture(montant);
         m.setStatut(StatutMission.FACTURE_DEPOSEE);
+        mettreAJourStatutSinistre(m, StatutSinistre.EN_ATTENTE_VALIDATION);
         m = missionRepository.save(m);
         notifClient(m, "Facture disponible",
                 "La facture de " + montant + " TND est disponible pour votre dossier " + ref(m) + ".");
@@ -335,7 +355,12 @@ public class MissionService {
         verifierAccesGarage(m, auth);
         m.setStatut(StatutMission.TERMINEE);
         m.setAvancementGarage("REPARATION_TERMINEE");
-        return mapToDto(missionRepository.save(m));
+        mettreAJourStatutSinistre(m, StatutSinistre.EN_ATTENTE_VALIDATION);
+        m = missionRepository.save(m);
+        notifClient(m, "Réparation terminée",
+            "La réparation de votre véhicule est terminée pour le dossier " + ref(m)
+            + ". Le garage va maintenant déposer la facture finale.");
+        return mapToDto(m);
     }
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -379,6 +404,13 @@ public class MissionService {
 
     private String ref(Mission m) {
         return m.getSinistre() != null ? m.getSinistre().getReference() : "#" + m.getId();
+    }
+
+    private void mettreAJourStatutSinistre(Mission mission, StatutSinistre statut) {
+        if (mission.getSinistre() != null) {
+            mission.getSinistre().setStatut(statut);
+            sinistreRepository.save(mission.getSinistre());
+        }
     }
 
     private void notifClient(Mission m, String titre, String msg) {

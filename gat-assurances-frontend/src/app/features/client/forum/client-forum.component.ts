@@ -104,8 +104,8 @@ interface Message {
         <p class="text-gray-500 text-sm max-w-xs">
           Sélectionnez un dossier à gauche pour communiquer avec votre garage et le gestionnaire.
         </p>
-        <div class="mt-6 flex items-center gap-2 text-xs text-gray-400">
-          <span class="w-2 h-2 rounded-full bg-green-400"></span>
+        <div class="mt-6 flex items-center gap-2 text-xs text-[#6B2D8B]">
+          <span class="w-2 h-2 rounded-full bg-[#F5A623]"></span>
           Messagerie sécurisée GAT
         </div>
       </div>
@@ -247,8 +247,8 @@ interface Message {
 
         <div class="flex items-end gap-2">
           <!-- Pièce jointe -->
-          <label class="w-9 h-9 rounded-xl flex items-center justify-center cursor-pointer text-gray-400
-                         hover:text-[#6B2D8B] hover:bg-gray-100 transition-all shrink-0">
+          <label class="w-9 h-9 rounded-xl flex items-center justify-center cursor-pointer text-[#6B2D8B]
+                         hover:text-[#E5162A] hover:bg-[#F8F0FB] transition-all shrink-0">
             <input type="file" class="hidden" accept="image/*,.pdf,.doc,.docx" (change)="onFileSelect($event)"/>
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
@@ -265,10 +265,10 @@ interface Message {
                     style="max-height:120px; min-height:40px"></textarea>
 
           <!-- Envoyer -->
-          <button (click)="sendMsg()" [disabled]="(!newMsg.trim() && !attachedFile()) || sending()"
+            <button (click)="sendMsg()" [disabled]="(!newMsg.trim() && !attachedFile()) || sending()"
                   class="w-10 h-10 rounded-xl flex items-center justify-center text-white transition-all
                          disabled:opacity-40 hover:-translate-y-0.5 shrink-0"
-                  style="background:linear-gradient(135deg,#6B2D8B,#E5162A);box-shadow:0 3px 10px rgba(107,45,139,0.35)">
+              style="background:linear-gradient(135deg,#6B2D8B,#C4187A);box-shadow:0 3px 10px rgba(107,45,139,0.35)">
             @if (sending()) {
               <div class="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin"></div>
             } @else {

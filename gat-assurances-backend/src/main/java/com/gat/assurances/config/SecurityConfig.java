@@ -83,7 +83,9 @@ public class SecurityConfig {
                 .requestMatchers("/remorquages/en-attente").hasAnyRole("REMORQUEUR","ADMIN")
                 .requestMatchers("/remorquages/mes-missions").hasAnyRole("REMORQUEUR","ADMIN")
                 .requestMatchers("/remorquages/*/accepter").hasRole("REMORQUEUR")
+                .requestMatchers("/remorquages/*/refuser").hasRole("REMORQUEUR")
                 .requestMatchers("/remorquages/*/avancer").hasAnyRole("REMORQUEUR","ADMIN")
+                .requestMatchers("/remorqueurs/ma-disponibilite").hasRole("REMORQUEUR")
 
                 // Missions
                 .requestMatchers("/missions/**").authenticated()

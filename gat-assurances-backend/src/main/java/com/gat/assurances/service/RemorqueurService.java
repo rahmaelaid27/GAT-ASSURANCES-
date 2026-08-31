@@ -4,7 +4,10 @@ import com.gat.assurances.dto.RemorqueurDto;
 import com.gat.assurances.entity.Remorqueur;
 import com.gat.assurances.exception.ResourceNotFoundException;
 import com.gat.assurances.repository.RemorqueurRepository;
+import com.gat.assurances.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,6 +18,20 @@ import java.util.stream.Collectors;
 public class RemorqueurService {
 
     private final RemorqueurRepository remorqueurRepository;
+    private final UserRepository userRepository;
+
+    @Transactional
+    public RemorqueurDto changerDisponibilite(boolean disponible, Authentication auth) {
+        Remorqueur remorqueur = userRepository.findByEmail(auth.getName())
+            .map(user -> remorqueurRepository.findByUserId(user.getId())
+                .orElseGet(() -> remorqueurRepository.findByEmail(auth.getName()).orElse(null)))
+            .orElseGet(() -> remorqueurRepository.findByEmail(auth.getName()).orElse(null));
+        if (remorqueur == null) {
+            throw new ResourceNotFoundException("Remorqueur introuvable");
+        }
+        remorqueur.setDisponibilite(disponible);
+        return mapToDto(remorqueurRepository.save(remorqueur));
+    }
 
     public List<RemorqueurDto> findAll() {
         return remorqueurRepository.findAll().stream()

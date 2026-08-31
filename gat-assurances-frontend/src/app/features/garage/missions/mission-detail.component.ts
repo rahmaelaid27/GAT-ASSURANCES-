@@ -89,10 +89,16 @@ interface Mission {
       <div class="flex items-start gap-3 p-4 rounded-xl border"
            [style.background]="m()!.statut === 'DEVIS_REFUSE' ? 'rgba(220,38,38,0.06)' : 'rgba(245,158,11,0.08)'"
            [style.border-color]="m()!.statut === 'DEVIS_REFUSE' ? '#fca5a5' : '#fcd34d'">
-        <span class="text-xl shrink-0">{{ m()!.statut === 'DEVIS_REFUSE' ? '❌' : '⚠️' }}</span>
+        <span class="text-xl shrink-0">
+          @if (m()!.statut === 'DEVIS_REFUSE') { <span>❌</span> } @else { <span>⚠️</span> }
+        </span>
         <div>
           <p class="text-sm font-semibold" [style.color]="m()!.statut === 'DEVIS_REFUSE' ? '#dc2626' : '#d97706'">
-            {{ m()!.statut === 'DEVIS_REFUSE' ? 'Devis refusé par le gestionnaire' : 'Complément demandé par l\'expert' }}
+            @if (m()!.statut === 'DEVIS_REFUSE') {
+              <span>Devis refuse par le gestionnaire</span>
+            } @else {
+              <span>Complement demande par l'expert</span>
+            }
           </p>
           <p class="text-sm text-gray-700 mt-1">{{ m()!.motifRefus }}</p>
           <p class="text-xs text-gray-400 mt-1.5">→ Veuillez corriger et redéposer un devis.</p>
@@ -115,13 +121,14 @@ interface Mission {
       <div>
         <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">Devis</p>
         <p class="font-medium" [style.color]="m()!.montantDevis ? '#16a34a' : '#6b7280'">
-          {{ m()!.montantDevis ? (m()!.montantDevis | number:'1.3-3') + ' TND' : 'Non déposé' }}
+          {{ m()!.montantDevis ? (m()!.montantDevis | number:'1.3-3') + ' TND'
+             : (m()!.statut === 'RAPPORT_EXPERT_VALIDE' ? 'À déposer par le garage' : 'Non déposé') }}
         </p>
       </div>
       <div>
         <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">Facture</p>
         <p class="font-medium" [style.color]="m()!.montantFacture ? '#16a34a' : '#6b7280'">
-          {{ m()!.montantFacture ? (m()!.montantFacture | number:'1.3-3') + ' TND' : 'Non déposée' }}
+          {{ m()!.montantFacture ? (m()!.montantFacture | number:'1.3-3') + ' TND' : '—' }}
         </p>
       </div>
       @if (m()!.avancementGarage) {
@@ -173,7 +180,11 @@ interface Mission {
                 class="w-full py-3 rounded-xl font-bold text-white text-sm transition-all
                        disabled:opacity-50 hover:-translate-y-0.5"
                 style="background:linear-gradient(135deg,#6B2D8B,#E5162A);box-shadow:0 4px 14px rgba(107,45,139,0.3)">
-          {{ saving() ? 'Envoi en cours…' : '📤 Envoyer le devis à l\'expert' }}
+          @if (saving()) {
+            <span>Envoi en cours...</span>
+          } @else {
+            <span>Envoyer le devis a l'expert</span>
+          }
         </button>
       </div>
     }
@@ -211,6 +222,9 @@ interface Mission {
           <span class="w-7 h-7 rounded-lg text-white text-xs font-bold flex items-center justify-center bg-green-600">🧾</span>
           Déposer la facture finale
         </h2>
+        <p class="rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700">
+          Réparation terminée : le client a été notifié. Déposez maintenant la facture finale.
+        </p>
         <div class="grid grid-cols-2 gap-4">
           <div class="col-span-2">
             <label class="block text-sm font-semibold text-gray-700 mb-1.5">Détail facture <span class="text-red-500">*</span></label>
@@ -292,7 +306,7 @@ export class MissionDetailComponent implements OnInit {
   canDeposeDevis(): boolean {
     const s = this.m()?.statut ?? '';
     return ['EN_ATTENTE','EN_REPARATION','EN_DIAGNOSTIC','EN_COMMANDE_PIECES',
-            'DEVIS_COMPLEMENT_DEMANDE','DEVIS_REFUSE','DEVIS_VALIDE_FINAL'].includes(s);
+            'RAPPORT_EXPERT_VALIDE','DEVIS_COMPLEMENT_DEMANDE','DEVIS_REFUSE','DEVIS_VALIDE_FINAL'].includes(s);
   }
 
   canMajAvancement(): boolean {
@@ -302,7 +316,7 @@ export class MissionDetailComponent implements OnInit {
   }
 
   canDeposeFacture(): boolean {
-    return this.m()?.statut === 'REPARATION_TERMINEE';
+    return ['REPARATION_TERMINEE', 'TERMINEE'].includes(this.m()?.statut ?? '');
   }
 
   deposerDevis(): void {

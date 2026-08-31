@@ -38,4 +38,22 @@ public class GeoService {
             return null;
         }
     }
+
+    public double[] coordsForGouvernorat(String gouvernorat) {
+        if (gouvernorat == null) return null;
+        return switch (gouvernorat.trim().toLowerCase()) {
+            case "tunis" -> new double[]{36.8065, 10.1815};
+            case "sfax" -> new double[]{34.7406, 10.7603};
+            case "sousse" -> new double[]{35.8256, 10.63699};
+            case "monastir" -> new double[]{35.7643, 10.8113};
+            case "nabeul" -> new double[]{36.4513, 10.7357};
+            case "bizerte" -> new double[]{37.2744, 9.8739};
+            case "ariana" -> new double[]{36.8665, 10.1647};
+            case "ben arous" -> new double[]{36.7531, 10.2189};
+            case "gabes" -> new double[]{33.8815, 10.0982};
+            case "kairouan" -> new double[]{35.6781, 10.0963};
+            case "gafsa" -> new double[]{34.4250, 8.7842};
+            default -> null;
+        };
+    }
 }

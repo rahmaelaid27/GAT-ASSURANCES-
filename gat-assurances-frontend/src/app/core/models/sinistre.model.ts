@@ -49,6 +49,8 @@ export interface Sinistre {
   garageNom?: string;
   expertId?: number;
   expertNom?: string;
+  remorqueurId?: number;
+  remorqueurNom?: string;
   gestionnaireId?: number;
   createdAt: string;
   updatedAt: string;

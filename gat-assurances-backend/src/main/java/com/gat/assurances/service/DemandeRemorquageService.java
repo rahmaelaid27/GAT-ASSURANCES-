@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -25,6 +26,12 @@ public class DemandeRemorquageService {
     private final RemorqueurRepository remorqueurRepository;
     private final UserRepository userRepository;
     private final NotificationService notificationService;
+        private final JdbcTemplate jdbcTemplate;
+
+        @jakarta.annotation.PostConstruct
+        void migratePhotoColumn() {
+                jdbcTemplate.execute("ALTER TABLE demandes_remorquage MODIFY COLUMN photos_intervention LONGTEXT");
+        }
 
     @Transactional
     public DemandeRemorquage creer(Long sinistreId, String locDepart,
@@ -96,6 +103,30 @@ public class DemandeRemorquageService {
         return demande;
     }
 
+        @Transactional
+        public DemandeRemorquage refuser(Long id, Authentication auth) {
+                DemandeRemorquage demande = getById(id);
+                if (demande.getStatut() != StatutRemorquage.EN_ATTENTE)
+                        throw new BusinessException("Cette demande n'est plus disponible.");
+                Remorqueur remorqueur = resolveRemorqueur(auth);
+                if (demande.getRemorqueur() != null && !demande.getRemorqueur().getId().equals(remorqueur.getId()))
+                        throw new BusinessException("Cette demande est réservée à un autre remorqueur.");
+                demande.setRemorqueur(null);
+                demande.setStatut(StatutRemorquage.ANNULE);
+                demande = demandeRepo.save(demande);
+                Sinistre sinistre = demande.getSinistre();
+                if (sinistre.getGestionnaire() != null)
+                        notificationService.envoyer(sinistre.getGestionnaire().getUser(), "Demande refusée",
+                                        "Le remorqueur a refusé la demande du dossier " + sinistre.getReference(),
+                                        TypeNotification.INFO, sinistre.getId());
+                if (sinistre.getClient() != null)
+                    notificationService.envoyer(sinistre.getClient().getUser(), "Demande de remorquage refusée",
+                            "La demande de remorquage du dossier " + sinistre.getReference()
+                            + " doit être réattribuée à un autre remorqueur.",
+                            TypeNotification.INFO, sinistre.getId());
+                return demande;
+        }
+
     @Transactional
     public DemandeRemorquage avancer(Long id, StatutRemorquage statut,
                                      String photos, Authentication auth) {
@@ -108,13 +139,21 @@ public class DemandeRemorquageService {
         if (statut == StatutRemorquage.ARRIVE_SUR_PLACE)
             demande.setDateArrivee(LocalDateTime.now());
 
+                Sinistre sinistre = demande.getSinistre();
+                if (sinistre.getClient() != null)
+                        notificationService.envoyer(sinistre.getClient().getUser(),
+                                        "Suivi du remorquage",
+                                        "Le remorqueur a mis à jour le dossier " + sinistre.getReference()
+                                        + " : " + statutLabel(statut), TypeNotification.INFO, sinistre.getId());
+
         if (statut == StatutRemorquage.LIVRE) {
             demande.setDateLivraison(LocalDateTime.now());
+                        sinistre.setStatut(StatutSinistre.EN_REPARATION);
+                        sinistreRepository.save(sinistre);
             if (demande.getRemorqueur() != null) {
                 demande.getRemorqueur().setDisponibilite(true);
                 remorqueurRepository.save(demande.getRemorqueur());
             }
-            Sinistre sinistre = demande.getSinistre();
             if (sinistre.getGarage() != null)
                 notificationService.envoyer(sinistre.getGarage().getUser(),
                         "Véhicule livré",
@@ -129,11 +168,19 @@ public class DemandeRemorquageService {
         return demandeRepo.save(demande);
     }
 
+        private String statutLabel(StatutRemorquage statut) {
+                return switch (statut) {
+                        case EN_ROUTE -> "en route";
+                        case ARRIVE_SUR_PLACE -> "arrivé sur place";
+                        case VEHICULE_CHARGE -> "véhicule pris en charge";
+                        case EN_TRANSIT -> "véhicule en transit";
+                        case LIVRE -> "véhicule livré au garage";
+                        default -> statut.name().toLowerCase().replace('_', ' ');
+                };
+        }
+
     public List<DemandeRemorquage> findByRemorqueur(Authentication auth) {
-        User user = userRepository.findByEmail(auth.getName())
-                .orElseThrow(() -> new ResourceNotFoundException("Utilisateur introuvable"));
-        Remorqueur r = remorqueurRepository.findByUserId(user.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("Remorqueur introuvable"));
+        Remorqueur r = resolveRemorqueur(auth);
         return demandeRepo.findActiveMissionsByRemorqueur(r.getId());
     }
 
@@ -141,9 +188,20 @@ public class DemandeRemorquageService {
         User user = userRepository.findByEmail(auth.getName())
                 .orElseThrow(() -> new ResourceNotFoundException("Utilisateur introuvable"));
         if (user.getRole() == Role.ADMIN) return demandeRepo.findAllPending();
-        Remorqueur remorqueur = remorqueurRepository.findByUserId(user.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("Remorqueur introuvable"));
+        Remorqueur remorqueur = resolveRemorqueur(auth);
         return demandeRepo.findPendingForRemorqueur(remorqueur.getId());
+    }
+
+        public List<DemandeRemorquage> findBySinistre(Long sinistreId) {
+                return demandeRepo.findBySinistreId(sinistreId);
+        }
+
+    private Remorqueur resolveRemorqueur(Authentication auth) {
+        User user = userRepository.findByEmail(auth.getName())
+                .orElseThrow(() -> new ResourceNotFoundException("Utilisateur introuvable"));
+        return remorqueurRepository.findByUserId(user.getId())
+                .or(() -> remorqueurRepository.findByEmail(user.getEmail()))
+                .orElseThrow(() -> new ResourceNotFoundException("Remorqueur introuvable"));
     }
 
     public List<RemorqueurDto> findAvailableRemorqueurs() {

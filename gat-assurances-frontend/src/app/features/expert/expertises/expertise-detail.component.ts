@@ -220,7 +220,11 @@ interface Mission {
         <h2 class="font-bold text-gray-900 flex items-center gap-2">
           <span class="w-7 h-7 rounded-lg text-white text-xs font-bold flex items-center justify-center"
                 style="background:#E5162A">📄</span>
-          {{ m()!.statut === 'RAPPORT_EXPERT_INCOMPLET' ? 'Corriger et redéposer le rapport' : 'Rédiger le rapport d\'expertise' }}
+          @if (m()!.statut === 'RAPPORT_EXPERT_INCOMPLET') {
+            <span>Corriger et redéposer le rapport</span>
+          } @else {
+            <span>Rédiger le rapport d'expertise</span>
+          }
         </h2>
 
         <!-- Rapport existant si correction demandée -->
@@ -235,6 +239,10 @@ interface Mission {
           <label class="block text-sm font-semibold text-gray-700 mb-1.5">
             Rapport d'expertise <span class="text-red-500">*</span>
           </label>
+          <button type="button" (click)="genererExempleRapport()"
+                  class="mb-2 rounded-lg border border-purple-200 bg-purple-50 px-3 py-1.5 text-xs font-semibold text-purple-700 hover:bg-purple-100 transition">
+            Generer un exemple de rapport
+          </button>
           <textarea [(ngModel)]="rapportTexte" rows="8"
                     placeholder="Rédigez votre rapport complet :
 • État du véhicule à l'arrivée
@@ -308,6 +316,30 @@ export class ExpertiseDetailComponent implements OnInit {
   datePrevue   = '';
   motifDevis   = '';
   rapportTexte = '';
+
+  genererExempleRapport(): void {
+    this.rapportTexte = [
+      "RAPPORT D'EXPERTISE",
+      '',
+      "1. Etat du vehicule a l'arrivee",
+      'Vehicule receptionne au garage Auto Service Lac le 28/08/2026. Dommages visibles a l avant droit.',
+      '',
+      '2. Dommages constates',
+      '- Pare-chocs avant droit deforme et raye.',
+      '- Aile avant droite enfoncee.',
+      '- Phare avant droit fissure.',
+      '',
+      '3. Cause probable du sinistre',
+      'Les dommages sont compatibles avec un choc frontal decale cote droit.',
+      '',
+      '4. Travaux et estimation',
+      'Remplacer le pare-chocs, le phare et l aile. Montant estimatif : 2 850 TND TTC.',
+      '',
+      '5. Conclusion',
+      'Les dommages sont reels et reparables. Prise en charge recommandee apres validation du devis.'
+    ].join('\n');
+    this.erreur.set(null);
+  }
 
   constructor(private route: ActivatedRoute, private http: HttpClient) {}
 

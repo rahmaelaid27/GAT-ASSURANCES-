@@ -46,8 +46,8 @@ public class DemandeRemorquageController {
     @Operation(summary = "Demandes en attente (visibles par les remorqueurs)")
     @GetMapping("/en-attente")
     @PreAuthorize("hasAnyRole('REMORQUEUR','ADMIN')")
-    public ResponseEntity<List<DemandeRemorquage>> pendantes(Authentication auth) {
-        return ResponseEntity.ok(remorquageService.findPending(auth));
+    public ResponseEntity<List<DemandeRemorquageDto>> pendantes(Authentication auth) {
+        return ResponseEntity.ok(remorquageService.findPending(auth).stream().map(this::toDto).toList());
     }
 
     @Operation(summary = "Remorqueurs disponibles pour une nouvelle déclaration")
@@ -60,24 +60,62 @@ public class DemandeRemorquageController {
     @Operation(summary = "Mes missions de remorquage (remorqueur connecté)")
     @GetMapping("/mes-missions")
     @PreAuthorize("hasAnyRole('REMORQUEUR','ADMIN')")
-    public ResponseEntity<List<DemandeRemorquage>> mesMissions(Authentication auth) {
-        return ResponseEntity.ok(remorquageService.findByRemorqueur(auth));
+    public ResponseEntity<List<DemandeRemorquageDto>> mesMissions(Authentication auth) {
+        return ResponseEntity.ok(remorquageService.findByRemorqueur(auth).stream().map(this::toDto).toList());
+    }
+
+    @Operation(summary = "Suivi du remorquage d'un sinistre")
+    @GetMapping("/par-sinistre/{sinistreId}")
+    @PreAuthorize("hasAnyRole('CLIENT','GESTIONNAIRE','GARAGE','EXPERT','REMORQUEUR','ADMIN')")
+    public ResponseEntity<List<DemandeRemorquageDto>> parSinistre(@PathVariable Long sinistreId) {
+        return ResponseEntity.ok(remorquageService.findBySinistre(sinistreId).stream().map(this::toDto).toList());
     }
 
     @Operation(summary = "Accepter une demande de remorquage")
     @PutMapping("/{id}/accepter")
     @PreAuthorize("hasRole('REMORQUEUR')")
-    public ResponseEntity<DemandeRemorquage> accepter(@PathVariable Long id, Authentication auth) {
-        return ResponseEntity.ok(remorquageService.accepter(id, auth));
+    public ResponseEntity<DemandeRemorquageDto> accepter(@PathVariable Long id, Authentication auth) {
+        return ResponseEntity.ok(toDto(remorquageService.accepter(id, auth)));
+    }
+
+    @Operation(summary = "Refuser une demande de remorquage")
+    @PutMapping("/{id}/refuser")
+    @PreAuthorize("hasRole('REMORQUEUR')")
+    public ResponseEntity<DemandeRemorquageDto> refuser(@PathVariable Long id, Authentication auth) {
+        return ResponseEntity.ok(toDto(remorquageService.refuser(id, auth)));
     }
 
     @Operation(summary = "Avancer le statut d'une mission de remorquage")
     @PutMapping("/{id}/avancer")
     @PreAuthorize("hasAnyRole('REMORQUEUR','ADMIN')")
-    public ResponseEntity<DemandeRemorquage> avancer(@PathVariable Long id,
+    public ResponseEntity<DemandeRemorquageDto> avancer(@PathVariable Long id,
                                                       @RequestParam StatutRemorquage statut,
-                                                      @RequestParam(required = false) String photos,
+                                                      @RequestBody(required = false) Map<String, String> body,
                                                       Authentication auth) {
-        return ResponseEntity.ok(remorquageService.avancer(id, statut, photos, auth));
+        String photos = body != null ? body.get("photos") : null;
+        return ResponseEntity.ok(toDto(remorquageService.avancer(id, statut, photos, auth)));
+    }
+
+    private DemandeRemorquageDto toDto(DemandeRemorquage demande) {
+        return DemandeRemorquageDto.builder()
+                .id(demande.getId())
+                .sinistreId(demande.getSinistre() != null ? demande.getSinistre().getId() : null)
+                .sinistreReference(demande.getSinistre() != null ? demande.getSinistre().getReference() : null)
+                .remorqueurId(demande.getRemorqueur() != null ? demande.getRemorqueur().getId() : null)
+                .remorqueurNom(demande.getRemorqueur() != null
+                        ? demande.getRemorqueur().getPrenom() + " " + demande.getRemorqueur().getNom() : null)
+                .localisationDepart(demande.getLocalisationDepart())
+                .coordonneesDepart(demande.getCoordonneesDepart())
+                .localisationDestination(demande.getLocalisationDestination())
+                .coordonneesDestination(demande.getCoordonneesDestination())
+                .statut(demande.getStatut())
+                .photosIntervention(demande.getPhotosIntervention())
+                .dateAcceptation(demande.getDateAcceptation())
+                .dateArrivee(demande.getDateArrivee())
+                .dateLivraison(demande.getDateLivraison())
+                .notes(demande.getNotes())
+                .createdAt(demande.getCreatedAt())
+                .updatedAt(demande.getUpdatedAt())
+                .build();
     }
 }

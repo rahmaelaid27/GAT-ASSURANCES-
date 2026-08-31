@@ -80,6 +80,8 @@ public class DataSeeder implements CommandLineRunner {
     private void seedAdditionalPartners() {
         seedGarageSupplementaire("garage3@gat.com.tn", "Ben Youssef", "Nour", "Garage El Menzah", "El Menzah", "+216 71 555 666", "50000003", 12, 4.6, 36.8450, 10.1650);
         seedGarageSupplementaire("garage4@gat.com.tn", "Kefi", "Yassine", "Auto Service Lac", "Les Berges du Lac", "+216 71 777 999", "50000004", 10, 4.4, 36.8350, 10.2450);
+        seedGarageSupplementaire("garage5@gat.com.tn", "Trabelsi", "Sami", "Garage Sfax Centre", "Sfax", "+216 74 888 111", "50000005", 10, 4.6, 34.7406, 10.7603);
+        seedGarageSupplementaire("garage6@gat.com.tn", "Masmoudi", "Ines", "Auto Sfax Services", "Sfax", "+216 74 999 222", "50000006", 8, 4.3, 34.7550, 10.7650);
         seedExpertSupplementaire("expert3@gat.com.tn", "Jlassi", "Amel", "+216 22 888 111", "70000003", "Tunis, Ariana, Nabeul", 4.6, 36.8300, 10.2100);
         seedExpertSupplementaire("expert4@gat.com.tn", "Gharbi", "Walid", "+216 22 999 222", "70000004", "Tunis, Sousse, Monastir", 4.5, 35.8300, 10.6400);
         seedRemorqueurSupplementaire("remorqueur3@gat.com.tn", "Brahmi", "Sonia", "+216 99 555 666", "80000003", "La Marsa", 36.8780, 10.3250, 2);

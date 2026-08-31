@@ -13,7 +13,7 @@ import { Commentaire, CommentaireCreateRequest } from '../../../core/models/comm
   standalone: true,
   imports: [CommonModule, FormsModule, DatePipe],
   template: `
-    <div class="p-6 max-w-4xl mx-auto space-y-6">
+    <div class="gat-forum-page p-6 max-w-4xl mx-auto space-y-6">
 
       <!-- En-tête -->
       <div class="flex items-center gap-3">
@@ -22,8 +22,8 @@ import { Commentaire, CommentaireCreateRequest } from '../../../core/models/comm
           ← Retour
         </button>
         <div>
-          <h1 class="text-xl font-bold text-gray-900">Forum du dossier</h1>
-          <p class="text-sm text-gray-500">Dossier #{{ sinistreId() }}</p>
+          <h1 class="text-xl font-bold gradient-text">Forum du dossier</h1>
+          <p class="text-sm text-[#6B2D8B]">Dossier #{{ sinistreId() }}</p>
         </div>
       </div>
 
@@ -35,13 +35,13 @@ import { Commentaire, CommentaireCreateRequest } from '../../../core/models/comm
           rows="3"
           placeholder="Votre message..."
           class="w-full border border-gray-200 rounded-lg p-3 text-sm focus:outline-none
-                 focus:ring-2 focus:ring-blue-500 resize-none">
+                 focus:ring-2 focus:ring-[#6B2D8B] resize-none">
         </textarea>
         <div class="flex items-center justify-between mt-3">
           <label class="flex items-center gap-2 text-sm text-gray-500 cursor-pointer">
             <input type="file" accept=".pdf,.jpg,.jpeg,.png" class="hidden"
                    (change)="onFileChange($event)" />
-            <span class="text-blue-500 hover:underline">📎 Joindre un fichier</span>
+            <span class="font-medium text-[#6B2D8B] hover:text-[#E5162A] hover:underline">📎 Joindre un fichier</span>
             @if (attachedFile) {
               <span class="text-xs text-gray-600">{{ attachedFile }}</span>
             }
@@ -49,7 +49,7 @@ import { Commentaire, CommentaireCreateRequest } from '../../../core/models/comm
           <button
             (click)="sendMessage()"
             [disabled]="!newMessage.trim() || sending"
-            class="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white
+            class="gat-forum-send disabled:opacity-50 text-white
                    px-5 py-2 rounded-lg text-sm font-medium transition">
             {{ sending ? 'Envoi…' : 'Envoyer' }}
           </button>
@@ -73,7 +73,7 @@ import { Commentaire, CommentaireCreateRequest } from '../../../core/models/comm
             <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
               <!-- Header message -->
               <div class="flex items-start gap-3 mb-3">
-                <div class="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600
+                <div class="w-9 h-9 rounded-full bg-gradient-to-br from-[#6B2D8B] to-[#C4187A]
                             flex items-center justify-center text-white text-sm font-bold shrink-0">
                   {{ initial(msg.user?.nom ?? msg.user?.prenom ?? '') }}
                 </div>
@@ -82,7 +82,7 @@ import { Commentaire, CommentaireCreateRequest } from '../../../core/models/comm
                     <span class="font-semibold text-gray-900 text-sm">
                       {{ (msg.user?.nom ?? 'Utilisateur') + ' ' + (msg.user?.prenom ?? '') }}
                     </span>
-                    <span class="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 font-medium">
+                    <span class="text-xs px-2 py-0.5 rounded-full bg-[#F8F0FB] text-[#6B2D8B] font-medium">
                       {{ roleLabel(msg.user?.role ?? '') }}
                     </span>
                     <span class="text-xs text-gray-400 ml-auto">
@@ -99,7 +99,7 @@ import { Commentaire, CommentaireCreateRequest } from '../../../core/models/comm
               @if (msg.pieceJointe) {
                 <div class="mt-3">
                   <a [href]="msg.pieceJointe" target="_blank"
-                     class="inline-flex items-center gap-1 text-blue-600 text-xs hover:underline">
+                     class="inline-flex items-center gap-1 text-[#E5162A] text-xs hover:underline">
                     📎 Pièce jointe
                   </a>
                 </div>
@@ -108,7 +108,7 @@ import { Commentaire, CommentaireCreateRequest } from '../../../core/models/comm
               <!-- Actions -->
               <div class="flex items-center gap-4 mt-4 pt-3 border-t border-gray-50">
                 <button (click)="startReply(msg)"
-                        class="text-xs text-gray-500 hover:text-blue-600 transition">
+                        class="text-xs text-gray-500 hover:text-[#6B2D8B] transition">
                   ↩ Répondre
                 </button>
                 @if (isOwner(msg)) {
@@ -129,7 +129,7 @@ import { Commentaire, CommentaireCreateRequest } from '../../../core/models/comm
                   <textarea [(ngModel)]="replyContent" rows="2"
                             placeholder="Votre réponse..."
                             class="w-full border border-gray-200 rounded-lg p-2 text-sm focus:outline-none
-                                   focus:ring-2 focus:ring-blue-400 resize-none">
+                                   focus:ring-2 focus:ring-[#6B2D8B] resize-none">
                   </textarea>
                   <div class="flex gap-2 mt-2 justify-end">
                     <button (click)="cancelReply()"
@@ -138,7 +138,7 @@ import { Commentaire, CommentaireCreateRequest } from '../../../core/models/comm
                     </button>
                     <button (click)="sendReply(msg.id)"
                             [disabled]="!replyContent.trim()"
-                            class="bg-blue-600 text-white text-xs px-3 py-1 rounded disabled:opacity-50 hover:bg-blue-700 transition">
+                            class="gat-forum-send text-white text-xs px-3 py-1 rounded disabled:opacity-50 transition">
                       Envoyer
                     </button>
                   </div>
@@ -147,16 +147,16 @@ import { Commentaire, CommentaireCreateRequest } from '../../../core/models/comm
 
               <!-- Réponses imbriquées -->
               @if (msg.reponses && msg.reponses.length > 0) {
-                <div class="mt-4 ml-6 space-y-3 border-l-2 border-blue-100 pl-4">
+                <div class="mt-4 ml-6 space-y-3 border-l-2 border-[#C4187A] pl-4">
                   @for (rep of msg.reponses; track rep.id) {
-                    <div class="bg-blue-50 rounded-lg p-3">
+                    <div class="bg-[#F8F0FB] rounded-lg p-3">
                       <div class="flex items-center gap-2 mb-2">
-                        <div class="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-400 to-blue-500
+                        <div class="w-7 h-7 rounded-full bg-gradient-to-br from-[#E5162A] to-[#F5A623]
                                     flex items-center justify-center text-white text-xs font-bold">
                           {{ initial(rep.user?.nom ?? rep.user?.prenom ?? '') }}
                         </div>
                         <span class="text-sm font-medium text-gray-800">{{ (rep.user?.nom ?? 'Utilisateur') + ' ' + (rep.user?.prenom ?? '') }}</span>
-                        <span class="text-xs px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-700">
+                        <span class="text-xs px-1.5 py-0.5 rounded bg-[#FFF3D9] text-[#A15C00]">
                           {{ roleLabel(rep.user?.role ?? '') }}
                         </span>
                         <span class="text-xs text-gray-400 ml-auto">

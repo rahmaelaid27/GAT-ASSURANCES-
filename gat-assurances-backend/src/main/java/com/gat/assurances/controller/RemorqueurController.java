@@ -7,6 +7,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -41,6 +43,14 @@ public class RemorqueurController {
     @Operation(summary = "Modifier un remorqueur")
     public ResponseEntity<RemorqueurDto> update(@PathVariable Long id, @Valid @RequestBody RemorqueurDto dto) {
         return ResponseEntity.ok(remorqueurService.update(id, dto));
+    }
+
+    @PutMapping("/ma-disponibilite")
+    @PreAuthorize("hasRole('REMORQUEUR')")
+    @Operation(summary = "Changer ma disponibilité")
+    public ResponseEntity<RemorqueurDto> changerDisponibilite(@RequestParam boolean disponible,
+                                                               Authentication auth) {
+        return ResponseEntity.ok(remorqueurService.changerDisponibilite(disponible, auth));
     }
 
     @DeleteMapping("/{id}")

@@ -10,13 +10,14 @@ import { Notification, NOTIF_ICON, NOTIF_COLOR } from '../../../core/models/noti
   standalone: true,
   imports: [CommonModule, RouterLink],
   template: `
-    <nav class="h-16 bg-white border-b border-gray-200 shadow-sm flex items-center
-                justify-between px-6 fixed top-0 left-0 right-0 z-50">
+    <nav class="gat-navbar h-16 bg-white border-b border-gray-200 shadow-sm flex items-center
+          justify-between px-6 fixed top-0 left-0 right-0 z-50">
 
       <!-- Logo + Titre -->
       <div class="flex items-center gap-3">
-        <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center">
-          <span class="text-white font-bold text-sm">G</span>
+        <div class="w-8 h-8 rounded-lg flex items-center justify-center shadow-sm overflow-hidden"
+             style="background:linear-gradient(135deg,#6B2D8B,#E5162A)">
+          <img src="assets/logo%20gat.png" alt="GAT" class="h-7 w-7 object-contain" />
         </div>
         <span class="font-bold text-gray-900 text-lg hidden sm:block">GAT Assurances</span>
       </div>
@@ -27,7 +28,7 @@ import { Notification, NOTIF_ICON, NOTIF_COLOR } from '../../../core/models/noti
         <!-- Cloche notifications -->
         <div class="relative" (clickOutside)="closeNotif()">
           <button (click)="toggleNotif()"
-                  class="relative p-2 rounded-full hover:bg-gray-100 transition text-gray-600">
+                  class="gat-navbar-icon relative p-2 rounded-full hover:bg-[#F8F0FB] transition text-[#6B2D8B]">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
                  viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -37,7 +38,7 @@ import { Notification, NOTIF_ICON, NOTIF_COLOR } from '../../../core/models/noti
                        1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
             </svg>
             @if (notifService.unreadCount() > 0) {
-              <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs
+              <span class="absolute -top-1 -right-1 bg-[#E5162A] text-white text-xs
                            rounded-full min-w-[18px] h-[18px] flex items-center
                            justify-center px-1 font-bold animate-pulse">
                 {{ notifService.unreadCount() > 99 ? '99+' : notifService.unreadCount() }}
@@ -56,7 +57,7 @@ import { Notification, NOTIF_ICON, NOTIF_COLOR } from '../../../core/models/noti
                   Notifications
                   @if (notifService.unreadCount() > 0) {
                     <span class="ml-2 bg-red-100 text-red-700 text-xs px-2 py-0.5 rounded-full">
-                      {{ notifService.unreadCount() }} non lues
+                           {{ notifService.unreadCount() }} non lues
                     </span>
                   }
                 </span>
@@ -77,7 +78,7 @@ import { Notification, NOTIF_ICON, NOTIF_COLOR } from '../../../core/models/noti
                     <div (click)="readAndNavigate(n)"
                          class="flex gap-3 px-4 py-3 cursor-pointer transition border-b
                                 border-gray-50 last:border-0
-                                {{ n.lu ? 'bg-white hover:bg-gray-50' : 'bg-blue-50 hover:bg-blue-100' }}">
+                          {{ n.lu ? 'bg-white hover:bg-[#FBF7FD]' : 'bg-[#F8F0FB] hover:bg-[#F0E2F7]' }}">
                       <span class="text-lg shrink-0">{{ notifIcon(n.type) }}</span>
                       <div class="flex-1 min-w-0">
                         <p class="text-sm font-medium text-gray-900 truncate">{{ n.titre }}</p>
@@ -85,7 +86,7 @@ import { Notification, NOTIF_ICON, NOTIF_COLOR } from '../../../core/models/noti
                         <p class="text-xs text-gray-400 mt-1">{{ n.createdAt | date:'dd/MM/yyyy HH:mm' }}</p>
                       </div>
                       @if (!n.lu) {
-                        <div class="w-2 h-2 rounded-full bg-blue-500 mt-2 shrink-0"></div>
+                        <div class="w-2 h-2 rounded-full bg-[#E5162A] mt-2 shrink-0"></div>
                       }
                     </div>
                   }
@@ -106,9 +107,9 @@ import { Notification, NOTIF_ICON, NOTIF_COLOR } from '../../../core/models/noti
         <!-- Avatar utilisateur -->
         <div class="relative">
           <button (click)="toggleUser()"
-                  class="flex items-center gap-2 p-1.5 rounded-full hover:bg-gray-100 transition">
-            <div class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600
-                        flex items-center justify-center text-white text-sm font-bold">
+          class="flex items-center gap-2 p-1.5 rounded-full hover:bg-[#F8F0FB] transition">
+        <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-sm"
+            [style.background]="avatarGradient()">
               {{ userInitial() }}
             </div>
             <div class="hidden sm:block text-left">
@@ -230,6 +231,17 @@ export class NavbarComponent implements OnInit {
       EXPERT: 'Expert', REMORQUEUR: 'Remorqueur', MANAGER: 'Manager', ADMIN: 'Administrateur'
     };
     return this.authService.getRole() ? map[this.authService.getRole()!] ?? '' : '';
+  }
+
+  avatarGradient(): string {
+    const gradients: Record<string, string> = {
+      CLIENT: 'linear-gradient(135deg,#6B2D8B,#C4187A)',
+      GARAGE: 'linear-gradient(135deg,#16a34a,#0f766e)',
+      EXPERT: 'linear-gradient(135deg,#E5162A,#C4187A)',
+      REMORQUEUR: 'linear-gradient(135deg,#F5A623,#E5162A)',
+      GESTIONNAIRE: 'linear-gradient(135deg,#E5162A,#6B2D8B)'
+    };
+    return gradients[this.authService.getRole() ?? ''] ?? 'linear-gradient(135deg,#6B2D8B,#E5162A)';
   }
 
   notifIcon(type: string): string { return (NOTIF_ICON as any)[type] ?? 'ℹ️'; }

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { DashboardService } from '../../../core/services/dashboard.service';
 import { DashboardRemorqueur } from '../../../core/models/dashboard.model';
+import { HttpClient } from '@angular/common/http';
 import { interval, startWith, switchMap } from 'rxjs';
 
 @Component({
@@ -16,11 +17,15 @@ import { interval, startWith, switchMap } from 'rxjs';
           <h1 class="text-2xl font-bold text-gray-900">Dashboard Remorqueur</h1>
           <p class="text-gray-500 text-sm mt-1">Vos interventions et disponibilité</p>
         </div>
-        <span [class]="data()?.disponible
-            ? 'bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium'
-            : 'bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-medium'">
-          {{ data()?.disponible ? '● Disponible' : '● Indisponible' }}
-        </span>
+        @if (data(); as dashboard) {
+          <button (click)="changerDisponibilite(!dashboard.disponible)"
+                  [disabled]="miseAJourDisponibilite()"
+                  [class]="dashboard.disponible
+                    ? 'bg-green-100 text-green-800 px-3 py-2 rounded-full text-sm font-medium hover:bg-green-200 disabled:opacity-50'
+                    : 'bg-red-100 text-red-800 px-3 py-2 rounded-full text-sm font-medium hover:bg-red-200 disabled:opacity-50'">
+            {{ miseAJourDisponibilite() ? 'Mise à jour...' : (dashboard.disponible ? '● Disponible' : '● Indisponible') }}
+          </button>
+        }
       </div>
 
       @if (data()) {
@@ -71,7 +76,22 @@ import { interval, startWith, switchMap } from 'rxjs';
 export class RemorqueurDashboardComponent implements OnInit {
   data = signal<DashboardRemorqueur | null>(null);
 
-  constructor(private dashboardService: DashboardService) {}
+  miseAJourDisponibilite = signal(false);
+
+  constructor(private dashboardService: DashboardService, private http: HttpClient) {}
+
+  changerDisponibilite(disponible: boolean): void {
+    this.miseAJourDisponibilite.set(true);
+    this.http.put<unknown>(`http://localhost:8081/api/remorqueurs/ma-disponibilite?disponible=${disponible}`, {})
+      .subscribe({
+        next: () => {
+          const current = this.data();
+          if (current) this.data.set({ ...current, disponible });
+          this.miseAJourDisponibilite.set(false);
+        },
+        error: () => this.miseAJourDisponibilite.set(false)
+      });
+  }
 
   ngOnInit(): void {
     interval(30000).pipe(
